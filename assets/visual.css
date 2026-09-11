@@ -20,17 +20,17 @@
 .home-intro{padding-top:82px;padding-bottom:72px}
 .home-intro-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:72px;align-items:start}
 .home-copy h2{font-family:'Cormorant Garamond',Georgia,serif;color:var(--forest);font-size:clamp(2.8rem,4.7vw,4.8rem);line-height:.92;margin:0;font-weight:600}
-.home-gallery-section{background:var(--forest);color:#fff}
-.home-gallery-section .kicker{color:#d4bd89}.home-gallery-section h2{color:#fff}.home-gallery-section .section-head p{color:#dce4de}
 .home-footer-cta{padding:60px 0;background:var(--sage)}
 .home-footer-cta .wrap{display:flex;align-items:center;justify-content:space-between;gap:32px}
 .home-footer-cta h2{font-family:'Cormorant Garamond',Georgia,serif;color:var(--forest);font-size:clamp(2.5rem,4vw,4rem);line-height:.95;margin:0;font-weight:600}
 
-/* Eight-photo editorial gallery */
-.gallery-eight{grid-template-columns:1.2fr .8fr .8fr;grid-auto-rows:210px}
-.gallery-eight .ph:nth-child(1){grid-row:span 2}
-.gallery-eight .ph:nth-child(6){grid-column:span 2}
-.gallery-eight .ph:nth-child(8){grid-column:span 2}
+/* Dedicated gallery: preserve each photo's natural framing */
+.gallery-page-section{padding-top:58px;background:var(--paper)}
+.gallery-masonry{columns:2 420px;column-gap:22px}
+.gallery-masonry figure{margin:0 0 22px;break-inside:avoid;overflow:hidden;background:var(--ivory);border:1px solid var(--rule)}
+.gallery-masonry img{display:block;width:100%;height:auto}
+.gallery-follow{margin-top:36px;padding-top:26px;border-top:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;gap:20px}
+.gallery-follow p{margin:0;color:#596159}
 
 /* Sponsor showcase: large partner marks with breathing room */
 .sponsor-showcase-section{padding-top:58px;padding-bottom:84px}
@@ -55,14 +55,13 @@
 
 @media(max-width:900px){
   .home-hero{min-height:66vh}.home-hero-inner{padding:74px 0 145px}.home-about-wrap{margin-top:-78px}.home-about{width:min(680px,calc(100% - 34px));margin:0 auto;padding:34px 32px}.home-intro-grid{grid-template-columns:1fr;gap:30px}.home-footer-cta .wrap{align-items:flex-start;flex-direction:column}
-  .gallery-eight{grid-template-columns:1fr 1fr;grid-auto-rows:220px}.gallery-eight .ph:nth-child(1){grid-row:span 1;grid-column:span 2}.gallery-eight .ph:nth-child(6),.gallery-eight .ph:nth-child(8){grid-column:span 1}
   .sponsor-showcase{grid-template-columns:1fr 1fr;gap:0 32px}.sponsor-mark{min-height:220px}.sponsor-mark img{max-height:160px}
   .contacts-grid{grid-template-columns:repeat(2,1fr)}
   .map-frame{height:380px}.join-grid{grid-template-columns:1fr;gap:48px}
 }
 @media(max-width:560px){
   .home-hero{min-height:68vh}.home-hero-media img{object-position:57% center}.home-hero-inner{padding:64px 0 135px}.home-title{font-size:clamp(2.8rem,12.5vw,4.1rem)}.home-welcome{font-size:1.25rem}.home-about-wrap{margin-top:-70px}.home-about{width:calc(100% - 24px);padding:28px 22px}.home-intro{padding-top:64px}
-  .gallery-eight{grid-template-columns:1fr;grid-auto-rows:260px}.gallery-eight .ph:nth-child(1),.gallery-eight .ph:nth-child(6),.gallery-eight .ph:nth-child(8){grid-column:auto;grid-row:auto}
+  .gallery-masonry{columns:1}.gallery-follow{align-items:flex-start;flex-direction:column}
   .sponsor-showcase{grid-template-columns:1fr;border-top:0}.sponsor-mark{min-height:190px;padding:28px 10px;border-top:1px solid var(--rule);border-bottom:0}.sponsor-mark:last-child{border-bottom:1px solid var(--rule)}.sponsor-mark img{max-width:94%;max-height:145px}
   .contacts-grid{grid-template-columns:1fr 1fr;gap:22px 18px}.map-frame{height:330px}.whatsapp-panel{grid-template-columns:1fr;text-align:center;padding:22px}.whatsapp-panel img{width:210px;height:210px;margin:auto}.whatsapp-panel .btn{width:100%}
 }
