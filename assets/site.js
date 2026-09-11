@@ -17,17 +17,12 @@ if (joinForm) {
     const data = new FormData(joinForm);
     const body = [
       `Name: ${data.get('name') || ''}`,
-      `Phone / WhatsApp: ${data.get('phone') || ''}`,
-      `Email: ${data.get('email') || ''}`,
-      `Role: ${data.get('role') || ''}`,
-      `Standard: ${data.get('standard') || ''}`,
-      `Saturday availability: ${data.get('availability') || ''}`,
-      `Student / staff: ${data.get('student') || ''}`,
+      `Contact: ${data.get('contact') || ''}`,
       `How they heard about us: ${data.get('source') || ''}`,
       '',
-      `Extra info: ${data.get('message') || ''}`
+      `${data.get('message') || ''}`
     ].join('\n');
-    const subject = encodeURIComponent('2027 player enquiry — LOCC');
+    const subject = encodeURIComponent('Player enquiry — Loughborough Outwoods CC');
     window.location.href = `mailto:lborooutwoodscc@gmail.com?subject=${subject}&body=${encodeURIComponent(body)}`;
   });
 }
