@@ -20,6 +20,13 @@
 .home-intro{padding-top:82px;padding-bottom:72px}
 .home-intro-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:72px;align-items:start}
 .home-copy h2{font-family:'Cormorant Garamond',Georgia,serif;color:var(--forest);font-size:clamp(2.8rem,4.7vw,4.8rem);line-height:.92;margin:0;font-weight:600}
+.home-gallery-preview{padding:34px 0 78px;background:var(--paper)}
+.home-gallery-preview-head{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:22px}
+.home-gallery-preview-head .kicker{margin:0}
+.home-gallery-preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+.home-gallery-preview-grid a{display:block;overflow:hidden;background:var(--ivory);border:1px solid var(--rule)}
+.home-gallery-preview-grid img{display:block;width:100%;height:auto;transition:transform .28s ease}
+.home-gallery-preview-grid a:hover img{transform:scale(1.015)}
 .home-footer-cta{padding:60px 0;background:var(--sage)}
 .home-footer-cta .wrap{display:flex;align-items:center;justify-content:space-between;gap:32px}
 .home-footer-cta h2{font-family:'Cormorant Garamond',Georgia,serif;color:var(--forest);font-size:clamp(2.5rem,4vw,4rem);line-height:.95;margin:0;font-weight:600}
@@ -80,6 +87,7 @@
 }
 @media(max-width:560px){
   .home-hero{min-height:68vh}.home-hero-media img{object-position:57% center}.home-hero-inner{padding:64px 0 135px}.home-title{font-size:clamp(2.8rem,12.5vw,4.1rem)}.home-welcome{font-size:1.25rem}.home-about-wrap{margin-top:-70px}.home-about{width:calc(100% - 24px);padding:28px 22px}.home-intro{padding-top:64px}
+  .home-gallery-preview{padding:22px 0 58px}.home-gallery-preview-grid{grid-template-columns:1fr;gap:14px}.home-gallery-preview-head{align-items:flex-start}
   .gallery-masonry{columns:1}.gallery-follow{align-items:flex-start;flex-direction:column}
   .sponsor-showcase{grid-template-columns:1fr;border-top:0}.sponsor-mark{min-height:190px;padding:28px 10px;border-top:1px solid var(--rule);border-bottom:0}.sponsor-mark:last-child{border-bottom:1px solid var(--rule)}.sponsor-mark img{max-width:94%;max-height:145px}
   .contacts-grid{grid-template-columns:1fr 1fr;gap:22px 18px}.map-frame{height:330px}
