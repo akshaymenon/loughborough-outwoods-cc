@@ -1,0 +1,45 @@
+/* Final site polish: active navigation, accessibility, responsive rhythm and 404 */
+.nav-links a[aria-current="page"]{color:var(--forest);font-weight:700}
+.nav-links>a[aria-current="page"]:not(.btn)::after{right:0;height:2px}
+.nav-links .btn[aria-current="page"]{background:var(--forest-deep);border-color:var(--forest-deep)}
+
+.skip-link{position:fixed;left:14px;top:14px;z-index:2000;padding:10px 14px;background:var(--forest-deep);color:#fff;text-decoration:none;transform:translateY(-180%);transition:transform .18s ease}
+.skip-link:focus{transform:translateY(0)}
+
+:focus-visible{outline:3px solid var(--brass);outline-offset:4px}
+.gallery-thumb:focus-visible,.instagram-arrow:focus-visible,.lightbox-close:focus-visible,.lightbox-nav:focus-visible{outline-color:#d6bd86}
+
+.page-hero .wrap,.section-head,.about-simple{max-width:980px}
+.page-hero p{margin-top:16px;margin-bottom:0}
+.section-head>div{margin-inline:auto}
+
+/* Prevent layout shift while remote Instagram images arrive. */
+.instagram-card img{aspect-ratio:1/1}
+.instagram-loading,.instagram-error{min-height:180px;display:flex;align-items:center}
+
+/* Give interactive gallery thumbnails a visible keyboard state without changing the visual design. */
+.gallery-thumb{border-radius:0}
+
+.error-page{min-height:62vh;display:grid;place-items:center;text-align:center;background:var(--paper);padding:90px 0}
+.error-inner{max-width:760px;margin:auto}
+.error-code{display:block;margin-bottom:10px;color:var(--brass);font-size:.8rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase}
+.error-page h1{font-family:'Cormorant Garamond',Georgia,serif;color:var(--forest);font-size:clamp(3.6rem,8vw,7rem);line-height:.88;letter-spacing:-.035em;margin:0 0 22px;font-weight:600}
+.error-page p{max-width:600px;margin:0 auto;color:#596159;font-size:1.06rem}
+.error-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:30px}
+
+@media(max-width:900px){
+  .nav-links a[aria-current="page"]:not(.btn)::after{display:none}
+  .nav-links a[aria-current="page"]:not(.btn){border-left:3px solid var(--brass);padding-left:12px}
+}
+
+@media(max-width:560px){
+  section{padding-top:66px;padding-bottom:66px}
+  .page-hero{padding-top:68px;padding-bottom:48px}
+  .page-hero h1{margin-bottom:18px}
+  .error-page{padding:70px 0}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.001ms!important;animation-duration:.001ms!important;animation-iteration-count:1!important}
+}
