@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://akshay-menon.com/loughborough-outwoods-cc/sitemap.xml
+Sitemap: https://outwoodscc.co.uk/sitemap.xml
