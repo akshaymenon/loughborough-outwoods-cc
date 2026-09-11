@@ -1,14 +1,28 @@
 const menuButton = document.querySelector('.menu-btn');
 const navLinks = document.querySelector('.nav-links');
 if (menuButton && navLinks) {
-  menuButton.addEventListener('click', () => {
-    const open = navLinks.classList.toggle('open');
+  const setMenuOpen = (open) => {
+    navLinks.classList.toggle('open', open);
     menuButton.setAttribute('aria-expanded', String(open));
+    menuButton.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+  };
+
+  menuButton.addEventListener('click', () => setMenuOpen(!navLinks.classList.contains('open')));
+  navLinks.addEventListener('click', (event) => {
+    if (event.target.closest('a')) setMenuOpen(false);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && navLinks.classList.contains('open')) {
+      setMenuOpen(false);
+      menuButton.focus();
+    }
   });
 }
 
 const year = document.querySelector('[data-year]');
 if (year) year.textContent = new Date().getFullYear();
+
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const instagramFeed = document.querySelector('[data-instagram-feed]');
 if (instagramFeed) {
@@ -29,7 +43,7 @@ if (instagramFeed) {
     const card = track.querySelector('.instagram-card');
     const gap = 22;
     const amount = card ? card.getBoundingClientRect().width + gap : track.clientWidth * 0.8;
-    track.scrollBy({ left: direction * amount, behavior: 'smooth' });
+    track.scrollBy({ left: direction * amount, behavior: prefersReducedMotion.matches ? 'auto' : 'smooth' });
   };
 
   if (prevButton) prevButton.addEventListener('click', () => scrollInstagram(-1));
@@ -52,7 +66,7 @@ if (instagramFeed) {
           const alt = post.altText || post.prunedCaption || 'Loughborough Outwoods Instagram post';
           const safeAlt = String(alt).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
           const href = post.permalink || 'https://www.instagram.com/lborooutwoodscc';
-          return `<a class="instagram-card" href="${href}" target="_blank" rel="noreferrer" aria-label="Open Instagram post"><img src="${imageUrl}" alt="${safeAlt}" loading="lazy"></a>`;
+          return `<a class="instagram-card" href="${href}" target="_blank" rel="noreferrer" aria-label="Open Instagram post"><img src="${imageUrl}" alt="${safeAlt}" loading="lazy" decoding="async"></a>`;
         }).join('');
 
         requestAnimationFrame(updateInstagramArrows);
