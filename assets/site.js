@@ -10,6 +10,61 @@ if (menuButton && navLinks) {
 const year = document.querySelector('[data-year]');
 if (year) year.textContent = new Date().getFullYear();
 
+const instagramFeed = document.querySelector('[data-instagram-feed]');
+if (instagramFeed) {
+  const feedId = instagramFeed.dataset.feedId;
+  const track = instagramFeed.querySelector('[data-instagram-track]');
+  const prevButton = instagramFeed.querySelector('[data-instagram-prev]');
+  const nextButton = instagramFeed.querySelector('[data-instagram-next]');
+
+  const updateInstagramArrows = () => {
+    if (!track) return;
+    const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth - 2);
+    if (prevButton) prevButton.disabled = track.scrollLeft <= 2;
+    if (nextButton) nextButton.disabled = track.scrollLeft >= maxScroll;
+  };
+
+  const scrollInstagram = (direction) => {
+    if (!track) return;
+    const card = track.querySelector('.instagram-card');
+    const gap = 22;
+    const amount = card ? card.getBoundingClientRect().width + gap : track.clientWidth * 0.8;
+    track.scrollBy({ left: direction * amount, behavior: 'smooth' });
+  };
+
+  if (prevButton) prevButton.addEventListener('click', () => scrollInstagram(-1));
+  if (nextButton) nextButton.addEventListener('click', () => scrollInstagram(1));
+  if (track) track.addEventListener('scroll', updateInstagramArrows, { passive: true });
+  window.addEventListener('resize', updateInstagramArrows);
+
+  if (feedId && track) {
+    fetch(`https://feeds.behold.so/${feedId}`)
+      .then((response) => {
+        if (!response.ok) throw new Error('Instagram feed request failed');
+        return response.json();
+      })
+      .then((data) => {
+        const posts = Array.isArray(data.posts) ? data.posts.slice(0, 6) : [];
+        if (!posts.length) throw new Error('No Instagram posts returned');
+
+        track.innerHTML = posts.map((post) => {
+          const imageUrl = post?.sizes?.medium?.mediaUrl || post?.sizes?.small?.mediaUrl || post.thumbnailUrl || post.mediaUrl;
+          const alt = post.altText || post.prunedCaption || 'Loughborough Outwoods Instagram post';
+          const safeAlt = String(alt).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const href = post.permalink || 'https://www.instagram.com/lborooutwoodscc';
+          return `<a class="instagram-card" href="${href}" target="_blank" rel="noreferrer" aria-label="Open Instagram post"><img src="${imageUrl}" alt="${safeAlt}" loading="lazy"></a>`;
+        }).join('');
+
+        requestAnimationFrame(updateInstagramArrows);
+      })
+      .catch(() => {
+        track.innerHTML = '<p class="instagram-error">Latest Instagram posts are temporarily unavailable. <a class="text-link" href="https://www.instagram.com/lborooutwoodscc" target="_blank" rel="noreferrer">View Instagram</a></p>';
+        if (prevButton) prevButton.hidden = true;
+        if (nextButton) nextButton.hidden = true;
+      });
+  }
+}
+
 const galleryItems = Array.from(document.querySelectorAll('.gallery-thumb'));
 const lightbox = document.querySelector('[data-lightbox]');
 if (galleryItems.length && lightbox) {
