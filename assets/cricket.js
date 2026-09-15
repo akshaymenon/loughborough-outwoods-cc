@@ -127,36 +127,47 @@
     const content = document.querySelector('[data-cricket-content]');
     if (!hub || !content) return;
     const buttons = [...hub.querySelectorAll('[data-team]')];
+    const tabs = [...hub.querySelectorAll('.hero-tabs [role="tab"]')];
     let selected = localStorage.getItem('outwoods-cricket-team') || 'All';
     if (!buttons.some((button) => button.dataset.team === selected)) selected = 'All';
+    let activePanel = (data.fixtures || []).length ? 'fixtures' : 'table';
+
+    const setPanel = (panel) => {
+      activePanel = panel;
+      tabs.forEach((tab) => tab.setAttribute('aria-selected', String(tab.dataset.panel === panel)));
+      content.querySelectorAll('[data-view]').forEach((view) => { view.hidden = view.dataset.view !== panel; });
+    };
 
     const draw = () => {
       buttons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.team === selected)));
       const selectedTeams = selected === 'All' ? (data.teams || []) : (data.teams || []).filter((item) => item.name === selected);
       const fixtures = (data.fixtures || []).filter((m) => selected === 'All' || m.team === selected);
       const results = (data.results || []).filter((m) => selected === 'All' || m.team === selected);
-      const nextRound = fixtureRound(data.fixtures || []);
-      const latestRound = fixtureRound(data.results || [], true);
-      content.innerHTML = `<div class="round-summary"><section><h2>Next fixtures</h2><div class="round-card-grid">${nextRound.length ? nextRound.map((match) => fixtureCard(match, true)).join('') : nextEmpty(data.season)}</div></section><section><h2>Latest results</h2><div class="round-card-grid">${latestRound.length ? latestRound.map((match) => resultCard(match, data, true)).join('') : '<article class="match-card match-card-empty"><h3>No results available.</h3></article>'}</div></section></div>
-        <div class="cricket-tabs" role="tablist" aria-label="Fixtures and results"><button role="tab" aria-selected="true" data-panel="fixtures">Fixtures</button><button role="tab" aria-selected="false" data-panel="results">Results</button><button role="tab" aria-selected="false" data-panel="table">Table</button><button role="tab" aria-selected="false" data-panel="history">Past seasons</button><button role="tab" aria-selected="false" data-panel="stats">Stats</button></div>
-        <div class="cricket-panel" data-panel-content>
-          <div data-view="fixtures">${fixtures.length ? `<div class="match-list">${fixtures.map((m) => fixtureCard(m)).join('')}</div>` : nextEmpty(data.season)}</div>
+      const roundSource = (data.fixtures || []).filter((m) => selected === 'All' || m.team === selected);
+      const nextRound = fixtureRound(roundSource);
+      const year = Number(data.season) || new Date().getFullYear();
+      const nextYear = Math.max(year + 1, new Date().getFullYear() + 1);
+      const hasTable = selectedTeams.some((team) => (data.tables || []).some((table) => (table.values || []).some((row) => String(row.team_id) === String(team.id))));
+      const currentStatus = nextRound.length
+        ? `<section class="current-status is-active"><div><span class="status-kicker">Next round</span><h2>${esc(dateText(nextRound[0].date))}</h2></div><div class="status-fixtures">${nextRound.map((match) => `<a href="${esc(match.playCricketUrl)}" target="_blank" rel="noreferrer"><b>${esc(match.team)}</b><span>${esc(opponent(match).club)}</span><strong>${esc(match.time || 'TBC')}</strong></a>`).join('')}</div></section>`
+        : `<section class="current-status"><div><span class="status-kicker">Season complete</span><h2>${year} is in the books.</h2><p>${nextYear} fixtures will appear here when published.</p></div>${hasTable ? `<button class="status-action" type="button" data-open-table>See ${year} final table</button>` : `<a class="status-action" href="${PLAY_CRICKET}" target="_blank" rel="noreferrer">Play-Cricket</a>`}</section>`;
+      content.innerHTML = `${currentStatus}<div class="cricket-panel" data-panel-content>
+          <div data-view="fixtures">${fixtures.length ? `<div class="match-list">${fixtures.map((m) => fixtureCard(m)).join('')}</div>` : '<div class="cricket-empty cricket-empty-compact"><h3>No upcoming fixtures</h3><p>The new schedule has not been published yet.</p></div>'}</div>
           <div data-view="results" hidden>${results.length ? `<div class="match-list">${results.map((m) => resultCard(m, data)).join('')}</div>` : '<div class="cricket-empty"><h3>No results available</h3><p>Published results will appear here automatically.</p></div>'}</div>
           <div data-view="table" hidden>${tableHtml(data, selectedTeams)}</div>
-          <div data-view="history" hidden>${historyHtml(data, selected)}</div>
           <div data-view="stats" hidden>${statsHtml(data, selected)}</div>
+          <div data-view="history" hidden>${historyHtml(data, selected)}</div>
         </div>`;
-      const tabs = [...content.querySelectorAll('[role="tab"]')];
-      tabs.forEach((tab) => tab.addEventListener('click', () => {
-        tabs.forEach((item) => item.setAttribute('aria-selected', String(item === tab)));
-        content.querySelectorAll('[data-view]').forEach((view) => { view.hidden = view.dataset.view !== tab.dataset.panel; });
-      }));
+      const tableButton = content.querySelector('[data-open-table]');
+      if (tableButton) tableButton.addEventListener('click', () => setPanel('table'));
+      setPanel(activePanel);
     };
     buttons.forEach((button) => button.addEventListener('click', () => {
       selected = button.dataset.team;
       localStorage.setItem('outwoods-cricket-team', selected);
       draw();
     }));
+    tabs.forEach((tab) => tab.addEventListener('click', () => setPanel(tab.dataset.panel)));
     draw();
   }
 
