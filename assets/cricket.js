@@ -71,7 +71,7 @@
   const resultCard = (match, data, large = false) => {
     const scores = resultLine(match);
     const mark = outcome(match);
-    const href = data.matches && data.matches[match.id] ? `/cricket/match.html?id=${encodeURIComponent(match.id)}` : match.playCricketUrl;
+    const href = data.matches && data.matches[match.id] ? `/fixtures-results/match.html?id=${encodeURIComponent(match.id)}` : match.playCricketUrl;
     const external = href.startsWith('http') ? ' target="_blank" rel="noreferrer"' : '';
     return `<article class="match-card result-card ${large ? 'match-card-featured' : ''}">
       <div class="match-card-top"><span class="match-eyebrow">Last time out</span><span class="match-card-tags"><span class="team-pill">${esc(match.team)}</span><span class="result-mark result-${mark.toLowerCase()}">${mark}</span></span></div>
