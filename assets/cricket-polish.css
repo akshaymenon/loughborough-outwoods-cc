@@ -1,0 +1,168 @@
+/* Match centre refinement: quiet hierarchy, fast scanning, progressive detail. */
+
+/* Hero and controls */
+main[data-cricket-hub] .cricket-hero{padding:46px 0 38px}
+main[data-cricket-hub] .cricket-hero>.wrap>.kicker{margin-bottom:8px}
+main[data-cricket-hub] .cricket-hero h1{font-size:clamp(3rem,6vw,5.4rem);line-height:.9}
+main[data-cricket-hub] .cricket-controls{max-width:1080px;margin:28px auto -66px;background:var(--paper);color:var(--ink);border:1px solid var(--rule);box-shadow:0 18px 42px rgba(14,43,35,.13)}
+main[data-cricket-hub] .control-row{grid-template-columns:72px minmax(0,1fr);min-height:58px;border-bottom:1px solid var(--rule)}
+main[data-cricket-hub] .control-label{padding-left:18px;color:var(--muted)}
+main[data-cricket-hub] .team-switch button{color:var(--forest);min-height:44px}
+main[data-cricket-hub] .team-switch button+button{border-left:1px solid var(--rule)}
+main[data-cricket-hub] .team-switch button[aria-pressed="true"]{background:var(--forest);color:#fff}
+main[data-cricket-hub] .hero-tabs button{color:var(--muted);padding-top:16px;padding-bottom:14px}
+main[data-cricket-hub] .hero-tabs button[aria-selected="true"]{color:var(--forest);border-bottom-color:var(--forest)}
+main[data-cricket-hub] .cricket-source-link{padding:10px 16px 12px}
+main[data-cricket-hub] .cricket-source-link a{color:var(--forest)}
+main[data-cricket-hub] .cricket-source-link a:hover{color:var(--forest-deep);text-decoration:underline}
+main[data-cricket-hub] .cricket-source-link span{color:var(--brass-text)}
+main[data-cricket-hub] .cricket-dashboard{padding-top:88px;padding-bottom:76px}
+
+/* The season-status strip is useful in Fixtures, but noise everywhere else. */
+main[data-cricket-hub]:has(.hero-tabs [data-panel="results"][aria-selected="true"]) .current-status,
+main[data-cricket-hub]:has(.hero-tabs [data-panel="table"][aria-selected="true"]) .current-status,
+main[data-cricket-hub]:has(.hero-tabs [data-panel="stats"][aria-selected="true"]) .current-status,
+main[data-cricket-hub]:has(.hero-tabs [data-panel="history"][aria-selected="true"]) .current-status{display:none}
+main[data-cricket-hub] .current-status{background:transparent;border:0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:20px 4px 22px}
+main[data-cricket-hub] .current-status h2{font-size:clamp(1.85rem,3vw,2.35rem);margin-top:5px}
+main[data-cricket-hub] .status-kicker{color:var(--brass-text)}
+main[data-cricket-hub] .status-fixtures a{background:var(--paper);border-color:var(--rule)}
+main[data-cricket-hub] .status-fixtures a strong{color:var(--forest)}
+main[data-cricket-hub] .cricket-panel{padding-top:30px}
+
+/* Group fixtures/results by the day they were played. */
+main[data-cricket-hub] .match-list{display:block;max-width:1040px;margin:0 auto}
+.match-day-group{margin:0 0 30px}
+.match-day-group:last-child{margin-bottom:0}
+.match-day-heading{display:flex;align-items:center;gap:14px;margin:0 0 10px;color:var(--forest);font:700 .8rem/1.2 'DM Sans',Arial,sans-serif;letter-spacing:.09em;text-transform:uppercase}
+.match-day-heading::after{content:"";height:1px;flex:1;background:var(--rule)}
+.match-day-cards{display:grid;gap:9px}
+
+/* Compact match rows. The data, not the chrome, gets the visual weight. */
+main[data-cricket-hub] .match-list .match-card{position:relative;display:grid;grid-template-columns:142px minmax(0,1fr) 132px;grid-template-areas:"top main action" "time main action" ". meta action";column-gap:28px;row-gap:4px;align-items:center;padding:22px 24px;background:var(--paper);border:1px solid var(--rule);transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+main[data-cricket-hub] .match-list .match-card:hover,
+main[data-cricket-hub] .match-list .match-card:focus-within{border-color:rgba(23,61,49,.42);box-shadow:0 8px 24px rgba(14,43,35,.07);transform:translateY(-1px)}
+main[data-cricket-hub] .match-list .match-card-top{grid-area:top;justify-content:flex-start;gap:8px}
+main[data-cricket-hub] .match-list .match-date{grid-area:time;margin:4px 0 0;color:var(--muted);font-size:.78rem;letter-spacing:.05em}
+main[data-cricket-hub] .match-list .match-sides,
+main[data-cricket-hub] .match-list .score-lines{grid-area:main;margin:0}
+main[data-cricket-hub] .match-list .match-meta,
+main[data-cricket-hub] .match-list .result-description{grid-area:meta;margin:4px 0 0;color:var(--muted);font-size:.86rem;line-height:1.45}
+main[data-cricket-hub] .match-list .text-link{grid-area:action;justify-self:end;align-self:center;position:static;border:0;padding:9px 0;font-size:.76rem;letter-spacing:.06em;text-transform:uppercase}
+main[data-cricket-hub] .match-list .text-link::after{content:"";position:absolute;inset:0}
+main[data-cricket-hub] .match-list .text-link:hover{text-decoration:underline}
+main[data-cricket-hub] .match-list .team-pill{background:var(--sage-light);border:0;padding:6px 9px;color:var(--forest);font-size:.7rem}
+main[data-cricket-hub] .match-list .match-card:not(.is-matchday):not(.match-card-empty) .match-eyebrow{display:none}
+main[data-cricket-hub] .match-list .is-matchday .match-eyebrow{color:var(--burgundy);font-size:.68rem}
+main[data-cricket-hub] .match-list .match-sides{font-size:clamp(1.35rem,2.25vw,1.8rem);line-height:1.05}
+main[data-cricket-hub] .match-list .match-sides span{font-size:.78rem;color:var(--muted)}
+main[data-cricket-hub] .match-list .score-lines{gap:6px;max-width:620px}
+main[data-cricket-hub] .match-list .score-lines div{grid-template-columns:minmax(0,1fr) auto;gap:18px;font-size:.97rem}
+main[data-cricket-hub] .match-list .score-lines b{font-size:2rem;font-variant-numeric:tabular-nums}
+main[data-cricket-hub] .match-list .result-mark{width:31px;height:31px;font-size:.73rem}
+main[data-cricket-hub] .result-card:has(.result-w){border-left:4px solid #2f7055}
+main[data-cricket-hub] .result-card:has(.result-l){border-left:4px solid var(--burgundy)}
+main[data-cricket-hub] .result-card:has(.result-d),
+main[data-cricket-hub] .result-card:has(.result-t){border-left:4px solid var(--brass-text)}
+main[data-cricket-hub] .match-list .result-w{background:#2f7055}
+main[data-cricket-hub] .match-list .result-l{background:var(--burgundy)}
+main[data-cricket-hub] .match-list .result-d,
+main[data-cricket-hub] .match-list .result-t{background:var(--brass-text);color:#fff}
+
+/* Keep empty/off-season states calm and separate from real match rows. */
+main[data-cricket-hub] .cricket-empty{border:0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);background:transparent;padding:48px 20px}
+main[data-cricket-hub] .cricket-empty h3{font-size:1.95rem}
+
+/* Tables and stats: reduce decoration, strengthen scan lines. */
+main[data-cricket-hub] .league-table-wrap,
+main[data-cricket-hub] .stats-table-wrap{border-color:var(--rule);box-shadow:none}
+main[data-cricket-hub] .league-table th,
+main[data-cricket-hub] .stats-table th{background:var(--forest-deep)}
+main[data-cricket-hub] .league-table td,
+main[data-cricket-hub] .stats-table td{padding-top:12px;padding-bottom:12px}
+main[data-cricket-hub] .league-table .is-outwoods{background:#e5ece5;box-shadow:inset 4px 0 0 var(--forest)}
+main[data-cricket-hub] .stats-subtabs{justify-content:flex-start;margin-bottom:26px}
+main[data-cricket-hub] .stats-subtabs button{padding:12px 18px}
+main[data-cricket-hub] .stats-heading .match-eyebrow{display:none}
+main[data-cricket-hub] .stats-heading h3{font-size:1.8rem;margin:0}
+main[data-cricket-hub] .data-note{margin-top:18px}
+main[data-cricket-hub] .table-title h3{font-size:1.8rem}
+
+/* Past seasons: let the year/finish read like data, not poster typography. */
+main[data-cricket-hub] .history-season{grid-template-columns:120px 1fr;border-left:0;border-top:1px solid var(--rule);padding:20px 22px}
+main[data-cricket-hub] .history-season header .match-eyebrow{display:none}
+main[data-cricket-hub] .history-season h2{font-size:2.1rem;margin:0}
+main[data-cricket-hub] .history-team>strong{font-size:2.25rem;margin-top:10px}
+main[data-cricket-hub] .history-card{border-top:1px solid var(--rule);padding:22px}
+main[data-cricket-hub] .history-card>strong{font-size:2.7rem}
+
+/* Scorecard: scores are the hero; the prose result is supporting information. */
+.scorecard-page{padding-top:34px}
+.scorecard-page .scorecard-back{margin-bottom:24px;font-size:.9rem}
+.scorecard-page .scorecard-hero{background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-top:4px solid var(--forest);padding:38px 42px;text-align:left}
+.scorecard-page .scorecard-hero .match-eyebrow{color:var(--brass-text)}
+.scorecard-page .scorecard-hero h1{font-family:'DM Sans',Arial,sans-serif;color:#4f5951;font-size:1.05rem;line-height:1.5;letter-spacing:0;font-weight:600;margin:10px 0 4px;max-width:none}
+.scorecard-page .scorecard-hero>p{margin:0;color:var(--muted);font-size:.9rem}
+.scorecard-page .scorecard-summary{margin-top:28px;padding-top:26px;border-top:1px solid var(--rule)}
+.scorecard-page .scorecard-summary>div:not(.result-mark){gap:7px}
+.scorecard-page .scorecard-summary span{color:var(--muted);font-size:.86rem;line-height:1.35}
+.scorecard-page .scorecard-summary strong{color:var(--forest);font-size:clamp(2.4rem,5vw,3.4rem);font-variant-numeric:tabular-nums}
+.scorecard-page .scorecard-summary .result-mark{width:38px;height:38px}
+.scorecard-page .innings-stack{gap:22px;margin-top:28px}
+.scorecard-page .innings-card{background:var(--paper);border:1px solid var(--rule);padding:26px 28px}
+.scorecard-page .innings-heading{margin-bottom:18px}
+.scorecard-page .innings-heading h2{font-size:2rem}
+.scorecard-page .innings-heading strong{font-size:2.3rem}
+.scorecard-page .score-table-wrap{border-color:var(--rule)}
+.scorecard-page .score-table th{background:var(--forest-deep)}
+.scorecard-page .score-table td{padding-top:11px;padding-bottom:11px}
+.scorecard-page .match-info{margin-top:28px;background:transparent;border-top:1px solid var(--rule);padding:26px 0 0}
+.scorecard-page .match-info h2{font-size:1.9rem}
+.scorecard-page .match-info p{margin:0;padding:12px 0}
+
+/* Home match cards should not repeat the generic "Last time out" label either. */
+.home-cricket .result-card .match-eyebrow{display:none}
+
+@media(max-width:900px){
+  main[data-cricket-hub] .cricket-controls{margin-left:0;margin-right:0}
+  main[data-cricket-hub] .match-list .match-card{grid-template-columns:124px minmax(0,1fr) 112px;column-gap:18px;padding:20px}
+  main[data-cricket-hub] .match-list .match-sides{font-size:1.35rem}
+  main[data-cricket-hub] .match-list .score-lines b{font-size:1.75rem}
+}
+
+@media(max-width:760px){
+  main[data-cricket-hub] .cricket-hero{padding-top:34px;padding-bottom:28px}
+  main[data-cricket-hub] .cricket-controls{margin-top:22px;margin-bottom:-48px;box-shadow:0 12px 28px rgba(14,43,35,.11)}
+  main[data-cricket-hub] .control-row{grid-template-columns:1fr;gap:6px;padding:10px 12px}
+  main[data-cricket-hub] .control-label{padding-left:2px}
+  main[data-cricket-hub] .team-switch{width:100%}
+  main[data-cricket-hub] .team-switch button{flex:1}
+  main[data-cricket-hub] .cricket-source-link{padding-left:12px;padding-right:12px}
+  main[data-cricket-hub] .cricket-dashboard{padding-top:70px}
+  main[data-cricket-hub] .current-status{align-items:flex-start;padding-left:0;padding-right:0}
+  main[data-cricket-hub] .match-list .match-card{display:block;padding:19px 18px}
+  main[data-cricket-hub] .match-list .match-card-top{margin-bottom:8px}
+  main[data-cricket-hub] .match-list .match-date{margin:7px 0 12px}
+  main[data-cricket-hub] .match-list .match-sides,
+  main[data-cricket-hub] .match-list .score-lines{margin:0 0 10px}
+  main[data-cricket-hub] .match-list .match-meta,
+  main[data-cricket-hub] .match-list .result-description{margin:8px 0 12px}
+  main[data-cricket-hub] .match-list .text-link{display:inline-flex;margin-top:2px}
+  main[data-cricket-hub] .match-list .match-sides{font-size:1.3rem}
+  main[data-cricket-hub] .match-list .score-lines b{font-size:1.65rem}
+  .match-day-group{margin-bottom:24px}
+  .scorecard-page .scorecard-hero{padding:28px 20px}
+  .scorecard-page .scorecard-summary{grid-template-columns:1fr;gap:12px;text-align:center}
+  .scorecard-page .scorecard-summary>div:first-child,
+  .scorecard-page .scorecard-summary>div:last-child{text-align:center}
+  .scorecard-page .scorecard-summary .result-mark{grid-row:2}
+  .scorecard-page .scorecard-summary>div:last-child{grid-row:3}
+  .scorecard-page .innings-card{padding:22px 16px}
+}
+
+@media(max-width:520px){
+  main[data-cricket-hub] .hero-tabs button{padding-left:14px;padding-right:14px}
+  main[data-cricket-hub] .stats-subtabs button{flex:1;padding-left:8px;padding-right:8px}
+  main[data-cricket-hub] .history-season{grid-template-columns:1fr;padding:18px}
+  main[data-cricket-hub] .history-season header{border-right:0;border-bottom:1px solid var(--rule);padding-bottom:12px;margin-bottom:12px}
+}
