@@ -23,9 +23,9 @@ const year = document.querySelector('[data-year]');
 if (year) year.textContent = new Date().getFullYear();
 
 const mainNav = document.querySelector('.nav-links');
-if (mainNav && !mainNav.querySelector('a[href*="/cricket/"]')) {
+if (mainNav && !mainNav.querySelector('a[href*="/fixtures-results/"]')) {
   const cricketLink = document.createElement('a');
-  cricketLink.href = '/cricket/';
+  cricketLink.href = '/fixtures-results/';
   cricketLink.textContent = 'Fixtures & Results';
   const juniorsLink = Array.from(mainNav.querySelectorAll('a')).find((link) => link.textContent.trim() === 'Juniors');
   if (juniorsLink) mainNav.insertBefore(cricketLink, juniorsLink);
@@ -41,9 +41,9 @@ if (mainNav && !mainNav.querySelector('a[href*="/juniors/"]')) {
 }
 
 const clubFooterLinks = document.querySelector('footer .footer-grid > div:nth-child(2) .footer-links');
-if (clubFooterLinks && !clubFooterLinks.querySelector('a[href*="/cricket/"]')) {
+if (clubFooterLinks && !clubFooterLinks.querySelector('a[href*="/fixtures-results/"]')) {
   const cricketFooterLink = document.createElement('a');
-  cricketFooterLink.href = '/cricket/';
+  cricketFooterLink.href = '/fixtures-results/';
   cricketFooterLink.textContent = 'Fixtures & results';
   const juniorsFooterLink = Array.from(clubFooterLinks.querySelectorAll('a')).find((link) => link.textContent.trim() === 'Juniors');
   if (juniorsFooterLink) clubFooterLinks.insertBefore(cricketFooterLink, juniorsFooterLink);
