@@ -81,6 +81,7 @@
 :root{--muted:#5f665e;--brass-text:#7a6634}
 .kicker{color:var(--brass-text);font-size:.78rem}
 .sponsor-info-section .kicker{color:var(--brass-text)}
+.error-code,.match-card .match-eyebrow,.current-status .status-kicker,.history-card>span,.stat-row span b,.status-fixtures a strong,.match-sides span{color:var(--brass-text)}
 
 :focus-visible{outline-color:var(--forest)}
 .home-hero :focus-visible,.dark-section :focus-visible,.cricket-hero :focus-visible,footer :focus-visible,.lightbox :focus-visible,.recruitment-poster-modal :focus-visible{outline-color:var(--ivory)}
@@ -96,6 +97,8 @@
 .join-primary-card h2{font-size:clamp(2.35rem,4vw,3.6rem);line-height:.98}
 .cricket-hero>.wrap>h1{font-size:clamp(3rem,6.1vw,5.5rem);line-height:.9;overflow-wrap:anywhere}
 .error-page h1{font-size:clamp(3.1rem,7vw,5.9rem);line-height:.92}
+main .scorecard-hero h1,main .scorecard-missing h1{overflow-wrap:anywhere}
+main .scorecard-missing h1{font-size:clamp(2.4rem,8vw,3.6rem)}
 
 .page-hero p,.section-head p,.intro-aside p,.editorial-block p{font-size:1.02rem}
 .home-about p{font-size:1.03rem}
@@ -124,4 +127,5 @@
   .home-about h2,.home-copy h2,.home-section-head h2,.home-footer-cta h2,.join-primary-card h2{font-size:clamp(2.15rem,9vw,2.85rem);line-height:1}
   .cricket-hero>.wrap>h1{font-size:clamp(2.45rem,11vw,3.3rem);line-height:.96}
   .error-page h1{font-size:clamp(2.55rem,11vw,3.5rem)}
+  main .scorecard-missing h1{font-size:clamp(2.2rem,10vw,3rem)}
 }
