@@ -44,8 +44,9 @@
 
       if (day !== groupKey) {
         groupKey = day;
-        const group = document.createElement('section');
+        const group = document.createElement('div');
         group.className = 'match-day-group';
+        group.setAttribute('role', 'group');
         group.setAttribute('aria-label', day);
 
         const heading = document.createElement('h2');
