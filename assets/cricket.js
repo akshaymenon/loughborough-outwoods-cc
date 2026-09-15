@@ -74,8 +74,8 @@
     const href = data.matches && data.matches[match.id] ? `/cricket/match.html?id=${encodeURIComponent(match.id)}` : match.playCricketUrl;
     const external = href.startsWith('http') ? ' target="_blank" rel="noreferrer"' : '';
     return `<article class="match-card result-card ${large ? 'match-card-featured' : ''}">
-      <div class="match-card-top"><span class="match-eyebrow">Last time out</span><span class="result-mark result-${mark.toLowerCase()}">${mark}</span></div>
-      <p class="match-date">${esc(dateText(match.date))} · ${esc(match.team)}</p>
+      <div class="match-card-top"><span class="match-eyebrow">Last time out</span><span class="match-card-tags"><span class="team-pill">${esc(match.team)}</span><span class="result-mark result-${mark.toLowerCase()}">${mark}</span></span></div>
+      <p class="match-date">${esc(dateText(match.date))}</p>
       <div class="score-lines"><div><strong>Outwoods</strong><b>${esc(scores.own)}</b></div><div><span>${esc(opponent(match).club)}</span><b>${esc(scores.other)}</b></div></div>
       <p class="result-description">${esc(match.resultDescription || 'Result recorded on Play-Cricket')}</p>
       <a class="text-link" href="${esc(href)}"${external}>View scorecard</a>
@@ -110,10 +110,21 @@
   function historyHtml(data, teamFilter) {
     const rows = (data.seasonPositions || []).filter((row) => teamFilter === 'All' || row.team === teamFilter);
     if (!rows.length) return '<div class="cricket-empty"><h3>Past positions unavailable</h3><p>Historical finishes will appear where Play-Cricket has published league tables.</p></div>';
-    return `<div class="history-grid">${rows.map((row) => `<article class="history-card"><span>${esc(row.season)}</span><strong>${esc(row.position)}${/1$/.test(row.position) && !/11$/.test(row.position) ? 'st' : /2$/.test(row.position) && !/12$/.test(row.position) ? 'nd' : /3$/.test(row.position) && !/13$/.test(row.position) ? 'rd' : 'th'}</strong><div>${esc(row.team)}</div><p>${esc(row.division)}</p></article>`).join('')}</div>`;
+    const ordinal = (position) => `${esc(position)}${/1$/.test(position) && !/11$/.test(position) ? 'st' : /2$/.test(position) && !/12$/.test(position) ? 'nd' : /3$/.test(position) && !/13$/.test(position) ? 'rd' : 'th'}`;
+    if (teamFilter !== 'All') {
+      return `<div class="history-grid">${rows.map((row) => `<article class="history-card"><span>${esc(row.season)}</span><strong>${ordinal(row.position)}</strong><div><span class="team-pill">${esc(row.team)}</span></div><p>${esc(row.division)}</p></article>`).join('')}</div>`;
+    }
+    const seasons = [...new Set(rows.map((row) => row.season))].sort((a, b) => b - a);
+    return `<div class="history-seasons">${seasons.map((season) => {
+      const seasonRows = rows.filter((row) => row.season === season).sort((a, b) => a.team.localeCompare(b.team));
+      return `<article class="history-season"><header><span class="match-eyebrow">Season</span><h2>${esc(season)}</h2></header><div class="history-team-grid">${seasonRows.map((row) => `<div class="history-team"><span class="team-pill">${esc(row.team)}</span><strong>${ordinal(row.position)}</strong><p>${esc(row.division)}</p></div>`).join('')}</div></article>`;
+    }).join('')}</div>`;
   }
 
   function statsHtml(data, teamNameValue) {
+    if (teamNameValue === 'All' && (data.teams || []).length) {
+      return `<div class="team-data-stack">${data.teams.map((team) => `<section><h2 class="team-section-title"><span class="team-pill">${esc(team.name)}</span></h2>${statsHtml(data, team.name)}</section>`).join('')}</div>`;
+    }
     const teamStats = data.statsByTeam?.[teamNameValue] || data.stats || {};
     const filterPlayer = (row) => row.name;
     const batting = (teamStats.batting || []).filter(filterPlayer).slice(0, 5);
