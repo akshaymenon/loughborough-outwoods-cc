@@ -2,7 +2,7 @@ name: Refresh Play-Cricket data
 
 on:
   schedule:
-    # Weekly on Wednesday throughout the year.
+    # Weekly on Wednesday throughout the year (05:17 UTC).
     - cron: '17 5 * * 3'
   workflow_dispatch:
 
@@ -17,11 +17,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Keep pre-refresh archive
+        run: cp data/cricket/site.json /tmp/site-before.json
       - name: Fetch cricket data
         env:
           PLAY_CRICKET_API_TOKEN: ${{ secrets.PLAY_CRICKET_API_TOKEN }}
           PLAY_CRICKET_SITE_ID: ${{ vars.PLAY_CRICKET_SITE_ID || '7239' }}
         run: python .github/scripts/sync_play_cricket.py
+      - name: Preserve historical seasons
+        run: python .github/scripts/preserve_cricket_history.py /tmp/site-before.json data/cricket/site.json
       - name: Save updated data
         run: |
           git config user.name "outwoods-data-bot"
