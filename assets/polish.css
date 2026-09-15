@@ -76,3 +76,52 @@
   html{scroll-behavior:auto}
   *,*::before,*::after{scroll-behavior:auto!important;transition-duration:.001ms!important;animation-duration:.001ms!important;animation-iteration-count:1!important}
 }
+
+/* 2027 audit fixes: contrast, type balance, mobile resilience and desktop recruitment poster. */
+:root{--muted:#5f665e;--brass-text:#7a6634}
+.kicker{color:var(--brass-text);font-size:.78rem}
+.sponsor-info-section .kicker{color:var(--brass-text)}
+
+:focus-visible{outline-color:var(--forest)}
+.home-hero :focus-visible,.dark-section :focus-visible,.cricket-hero :focus-visible,footer :focus-visible,.lightbox :focus-visible,.recruitment-poster-modal :focus-visible{outline-color:var(--ivory)}
+.gallery-thumb:focus-visible,.instagram-arrow:focus-visible{outline-color:var(--forest)}
+.lightbox-close:focus-visible,.lightbox-nav:focus-visible{outline-color:var(--ivory)}
+
+.page-hero h1{font-size:clamp(3.3rem,7vw,6.2rem);line-height:.9;overflow-wrap:anywhere}
+.section-head h2,.section-title{font-size:clamp(2.4rem,4.4vw,4.15rem);line-height:.97}
+.home-about h2{font-size:clamp(2.35rem,4vw,3.5rem);line-height:.98}
+.home-copy h2{font-size:clamp(2.5rem,4.2vw,4.1rem);line-height:.96}
+.home-section-head h2{font-size:clamp(2.4rem,4.2vw,4rem);line-height:.96}
+.home-footer-cta h2{font-size:clamp(2.35rem,3.7vw,3.45rem);line-height:.98}
+.join-primary-card h2{font-size:clamp(2.35rem,4vw,3.6rem);line-height:.98}
+.cricket-hero>.wrap>h1{font-size:clamp(3rem,6.1vw,5.5rem);line-height:.9;overflow-wrap:anywhere}
+.error-page h1{font-size:clamp(3.1rem,7vw,5.9rem);line-height:.92}
+
+.page-hero p,.section-head p,.intro-aside p,.editorial-block p{font-size:1.02rem}
+.home-about p{font-size:1.03rem}
+.contact-person .role{font-size:.76rem}
+.contact-person p{font-size:.9rem}
+
+.home-hero-inner{width:min(var(--max),calc(100% - 42px));margin-inline:auto}
+
+.recruitment-poster-modal[hidden]{display:none}
+.recruitment-poster-modal{position:fixed;inset:0;z-index:2500;background:rgba(7,18,14,.88);display:grid;place-items:center;padding:28px;backdrop-filter:blur(5px)}
+.recruitment-poster-dialog{position:relative;max-width:min(760px,calc(100vw - 96px));max-height:calc(100vh - 56px);display:grid;place-items:center}
+.recruitment-poster-dialog img{display:block;width:auto;max-width:100%;height:auto;max-height:calc(100vh - 56px);object-fit:contain;box-shadow:0 22px 70px rgba(0,0,0,.42)}
+.recruitment-poster-close{position:absolute;top:10px;right:10px;z-index:1;width:46px;height:46px;border:1px solid rgba(255,255,255,.78);background:rgba(14,43,35,.9);color:#fff;font:400 2rem/1 Georgia,serif;cursor:pointer;display:grid;place-items:center}
+.recruitment-poster-close:hover{background:var(--forest-deep)}
+.poster-modal-open{overflow:hidden}
+
+@media(max-width:900px){
+  .nav-links a[aria-current="page"]:not(.btn){border-left-color:var(--forest)}
+  .recruitment-poster-modal{display:none!important}
+}
+
+@media(max-width:560px){
+  .home-hero-inner{width:calc(100% - 28px)}
+  .page-hero h1{font-size:clamp(2.5rem,11.5vw,3.35rem);line-height:.96}
+  .section-head h2,.section-title{font-size:clamp(2.15rem,9.5vw,3rem);line-height:1}
+  .home-about h2,.home-copy h2,.home-section-head h2,.home-footer-cta h2,.join-primary-card h2{font-size:clamp(2.15rem,9vw,2.85rem);line-height:1}
+  .cricket-hero>.wrap>h1{font-size:clamp(2.45rem,11vw,3.3rem);line-height:.96}
+  .error-page h1{font-size:clamp(2.55rem,11vw,3.5rem)}
+}
