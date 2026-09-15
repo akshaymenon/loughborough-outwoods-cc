@@ -9,6 +9,7 @@ import sys
 import urllib.parse
 import urllib.request
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime
 from pathlib import Path
 
@@ -39,6 +40,30 @@ def canonical_team_name(value: str) -> str:
     if "2nd xi" in lowered:
         return "2nd XI"
     return value or "Outwoods"
+
+
+def discover_senior_teams(matches: list[dict], results: list[dict], site_id: str) -> list[dict]:
+    """Discover our Saturday XIs without relying on the restricted Teams API."""
+    discovered = {}
+    for match in matches + results:
+        for side in ("home", "away"):
+            if str(match.get(f"{side}_club_id")) != site_id:
+                continue
+            team_id = str(match.get(f"{side}_team_id", ""))
+            team_name = match.get(f"{side}_team_name", "")
+            canonical_name = canonical_team_name(team_name)
+            if team_id and canonical_name in {"1st XI", "2nd XI"}:
+                discovered[team_id] = {"id": team_id, "team_name": canonical_name}
+
+    # These stable Play-Cricket team IDs keep the off-season sync useful even if
+    # a future season has been created before its first fixture is published.
+    if site_id == "7239":
+        return [
+            {"id": "838", "team_name": "1st XI"},
+            {"id": "839", "team_name": "2nd XI"},
+        ]
+
+    return sorted(discovered.values(), key=lambda team: team["team_name"])
 
 
 def team_label(match: dict, club_id: str) -> str:
@@ -208,14 +233,20 @@ def main():
     # Keep the public archive useful without asking Play-Cricket for every season
     # in the club's history. 2020 is the earliest season shown in the website UI.
     seasons = list(range(2020, today.year + 2))
-    teams_raw = fetch(f"sites/{site_id}/teams.json", api_token=token)
-    senior_teams = [t for t in teams_raw.get("teams", []) if any(label in (t.get("team_name") or "").strip().lower() for label in ("1st xi", "2nd xi"))]
-    team_ids = {str(t["id"]) for t in senior_teams}
-
     all_matches, all_results = [], []
     for season in seasons:
-        all_matches.extend(fetch("matches.json", site_id=site_id, season=season, api_token=token).get("matches", []))
-        all_results.extend(fetch("result_summary.json", site_id=site_id, season=season, api_token=token).get("result_summary", []))
+        season_matches = fetch("matches.json", site_id=site_id, season=season, api_token=token).get("matches", [])
+        season_results = fetch("result_summary.json", site_id=site_id, season=season, api_token=token).get("result_summary", [])
+        # Play-Cricket can return the latest season again for an unpublished future
+        # season, so verify dates locally and de-duplicate the public feed.
+        all_matches.extend(match for match in season_matches if parse_date(match["match_date"]).year == season)
+        all_results.extend(result for result in season_results if parse_date(result["match_date"]).year == season)
+
+    all_matches = list({str(match.get("id") or match.get("match_id")): match for match in all_matches}.values())
+    all_results = list({str(result.get("id") or result.get("match_id")): result for result in all_results}.values())
+
+    senior_teams = discover_senior_teams(all_matches, all_results, site_id)
+    team_ids = {str(t["id"]) for t in senior_teams}
 
     def senior(match):
         return str(match.get("home_team_id")) in team_ids or str(match.get("away_team_id")) in team_ids
@@ -228,27 +259,48 @@ def main():
     # Fetch full cards for the latest completed season. Old cards remain available in Play-Cricket.
     latest_season = max((parse_date(r["date"]).year for r in results), default=today.year)
     season_results = [r for r in results if parse_date(r["date"]).year == latest_season]
-    details = []
-    for result in season_results:
+    def fetch_detail(result):
         try:
-            details.append(normalise_detail(fetch("match_detail.json", match_id=result["id"], api_token=token), site_id))
+            return normalise_detail(fetch("match_detail.json", match_id=result["id"], api_token=token), site_id)
         except Exception as error:  # retain the summary even when one card is incomplete
             print(f"Could not fetch match {result['id']}: {error}", file=sys.stderr)
+            return None
+
+    details = []
+    # A small pool keeps refreshes practical while remaining far below live-score polling.
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        futures = [executor.submit(fetch_detail, result) for result in season_results]
+        for future in as_completed(futures):
+            detail = future.result()
+            if detail:
+                details.append(detail)
 
     tables = []
     division_seasons = {}
     for match in all_matches + all_results:
         if senior(match) and match.get("competition_type") == "League" and match.get("competition_id"):
             division_seasons[str(match["competition_id"])] = int(match.get("season") or parse_date(match["match_date"]).year)
-    for division_id, season in sorted(division_seasons.items(), key=lambda item: item[1], reverse=True):
+    def fetch_table(division_id, season):
         try:
             table = (fetch("league_table.json", division_id=division_id, api_token=token).get("league_table") or [None])[0]
             if table:
                 table["season"] = season
                 table["competitionId"] = division_id
-                tables.append(table)
+                return table
         except Exception as error:
             print(f"Could not fetch table {division_id}: {error}", file=sys.stderr)
+        return None
+
+    with ThreadPoolExecutor(max_workers=6) as executor:
+        futures = [
+            executor.submit(fetch_table, division_id, season)
+            for division_id, season in division_seasons.items()
+        ]
+        for future in as_completed(futures):
+            table = future.result()
+            if table:
+                tables.append(table)
+    tables.sort(key=lambda table: (table["season"], table.get("name", "")), reverse=True)
 
     season_positions = []
     for table in tables:
