@@ -1,0 +1,31 @@
+name: Refresh Play-Cricket data
+
+on:
+  schedule:
+    - cron: '17 5 * * *'
+    - cron: '47 19 * 5,6'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Fetch cricket data
+        env:
+          PLAY_CRICKET_API_TOKEN: ${{ secrets.PLAY_CRICKET_API_TOKEN }}
+          PLAY_CRICKET_SITE_ID: ${{ vars.PLAY_CRICKET_SITE_ID || '7239' }}
+        run: python .github/scripts/sync_play_cricket.py
+      - name: Save updated data
+        run: |
+          git config user.name "outwoods-data-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/cricket/site.json
+          git diff --cached --quiet || git commit -m "Update Play-Cricket data"
+          git push

@@ -1,0 +1,14 @@
+{
+  "generatedAt": null,
+  "siteId": "7239",
+  "season": 2026,
+  "teams": [
+    { "id": "1st-xi", "name": "1st XI" },
+    { "id": "2nd-xi", "name": "2nd XI" }
+  ],
+  "fixtures": [],
+  "results": [],
+  "tables": [],
+  "stats": { "batting": [], "bowling": [] },
+  "matches": {}
+}

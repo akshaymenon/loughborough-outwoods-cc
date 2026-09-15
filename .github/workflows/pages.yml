@@ -31,6 +31,11 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check pillow
           python .github/scripts/clean_sponsor_logos.py
+      - name: Sync Play-Cricket
+        env:
+          PLAY_CRICKET_API_TOKEN: ${{ secrets.PLAY_CRICKET_API_TOKEN }}
+          PLAY_CRICKET_SITE_ID: ${{ vars.PLAY_CRICKET_SITE_ID || '7239' }}
+        run: python .github/scripts/sync_play_cricket.py
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload site

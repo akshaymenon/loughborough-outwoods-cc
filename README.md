@@ -28,6 +28,12 @@ The Join page currently turns the form into a pre-filled email to `lborooutwoods
 ## Deployment
 `.github/workflows/pages.yml` deploys the repository to GitHub Pages on every push to `main`.
 
+## Play-Cricket data
+
+GitHub Actions refreshes fixtures, results, league tables and scorecards from Play-Cricket. Configure the repository secret `PLAY_CRICKET_API_TOKEN`; the club site ID defaults to `7239` and can optionally be overridden with the repository variable `PLAY_CRICKET_SITE_ID`.
+
+The scheduled refresh runs daily, with extra Friday and Saturday evening updates. It can also be run from **Actions → Refresh Play-Cricket data → Run workflow**.
+
 Initial expected URL:
 `https://akshaymenon.github.io/loughborough-outwoods-cc/`
 
