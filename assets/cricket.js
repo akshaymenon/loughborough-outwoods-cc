@@ -14,6 +14,21 @@
     const d = parseDate(value);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
+  const weekKey = (value) => {
+    const d = parseDate(value);
+    const day = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - day);
+    return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  };
+  const fixtureRound = (matches = [], latest = false) => {
+    if (!matches.length) return [];
+    const anchor = matches[0];
+    const key = weekKey(anchor.date);
+    return matches.filter((match) => weekKey(match.date) === key).sort((a, b) => {
+      const teamOrder = (name) => name.includes('1st') ? 1 : name.includes('2nd') ? 2 : 3;
+      return teamOrder(a.team) - teamOrder(b.team);
+    });
+  };
   const teamName = (side) => `${side.club}${side.team ? ` · ${side.team}` : ''}`;
   const scoreFor = (match, teamId) => {
     const innings = (match.innings || []).filter((item) => item.teamId === String(teamId));
@@ -41,7 +56,7 @@
   const nextEmpty = (season) => {
     const year = Number(season) || new Date().getFullYear();
     const next = Math.max(year + 1, new Date().getFullYear() + 1);
-    return `<article class="match-card match-card-empty"><span class="match-eyebrow">Between seasons</span><h3>That’s stumps for ${year}.</h3><p>The next fixtures aren’t on Play-Cricket yet. When the ${next} schedule is published, the next match will appear here automatically.</p><a class="text-link" href="${PLAY_CRICKET}" target="_blank" rel="noreferrer">Visit Play-Cricket</a></article>`;
+    return `<article class="match-card match-card-empty"><span class="match-eyebrow">Between seasons</span><h3>That’s stumps for ${year}.</h3><p>${next} fixtures will appear here when published.</p><a class="text-link" href="${PLAY_CRICKET}" target="_blank" rel="noreferrer">Play-Cricket</a></article>`;
   };
   const fixtureCard = (match, large = false) => {
     const matchday = matchDateKey(match.date) === todayKey();
@@ -70,19 +85,32 @@
   function renderHome(data) {
     const grid = document.querySelector('[data-home-match-grid]');
     if (!grid) return;
-    const next = data.fixtures && data.fixtures[0];
-    const latest = data.results && data.results[0];
-    grid.innerHTML = `${next ? fixtureCard(next, true) : nextEmpty(data.season)}${latest ? resultCard(latest, data, true) : `<article class="match-card match-card-empty"><span class="match-eyebrow">Latest result</span><h3>No result available.</h3><p>Results will appear here when they are published on Play-Cricket.</p></article>`}`;
+    const next = fixtureRound(data.fixtures || []);
+    const latest = fixtureRound(data.results || [], true);
+    grid.innerHTML = `<section class="home-round"><h3>Next fixtures</h3><div class="round-card-grid">${next.length ? next.map((match) => fixtureCard(match, true)).join('') : nextEmpty(data.season)}</div></section>
+      <section class="home-round"><h3>Latest results</h3><div class="round-card-grid">${latest.length ? latest.map((match) => resultCard(match, data, true)).join('') : '<article class="match-card match-card-empty"><span class="match-eyebrow">Latest results</span><h3>No results available.</h3></article>'}</div></section>`;
   }
 
-  function tableHtml(data, teamId) {
-    const table = (data.tables || []).find((item) => (item.values || []).some((row) => String(row.team_id) === String(teamId)));
+  function singleTableHtml(data, teamId) {
+    const table = (data.tables || []).filter((item) => (item.values || []).some((row) => String(row.team_id) === String(teamId))).sort((a, b) => Number(b.season || 0) - Number(a.season || 0))[0];
     if (!table) return '<div class="cricket-empty"><h3>League table unavailable</h3><p>The new table will appear once the competition is published on Play-Cricket.</p></div>';
     const headings = table.headings || {};
     const entries = Object.entries(headings);
     const wanted = entries.filter(([, label]) => /^(team|p|w|l|pts)$/i.test(String(label).trim()));
     const columns = wanted.length >= 3 ? wanted : entries.slice(0, 5);
-    return `<div class="league-table-wrap"><table class="league-table"><thead><tr><th>Pos</th>${columns.map(([, label]) => `<th>${esc(label)}</th>`).join('')}</tr></thead><tbody>${(table.values || []).map((row) => `<tr class="${String(row.team_id) === String(teamId) ? 'is-outwoods' : ''}"><td>${esc(row.position)}</td>${columns.map(([key]) => `<td>${esc(row[key])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    return `<div class="table-title"><div><span class="match-eyebrow">${esc(table.season || '')} season</span><h3>${esc(table.name || 'League table')}</h3></div></div><div class="league-table-wrap"><table class="league-table"><thead><tr><th>Pos</th>${columns.map(([, label]) => `<th>${esc(label)}</th>`).join('')}</tr></thead><tbody>${(table.values || []).map((row) => `<tr class="${String(row.team_id) === String(teamId) ? 'is-outwoods' : ''}"><td>${esc(row.position)}</td>${columns.map(([key]) => `<td>${esc(row[key])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  }
+
+  function tableHtml(data, teams) {
+    const usable = teams.filter((team) => team && team.id);
+    if (!usable.length) return '<div class="cricket-empty"><h3>League table unavailable</h3></div>';
+    return `<div class="tables-stack">${usable.map((team) => `<section>${usable.length > 1 ? `<h2 class="team-section-title">${esc(team.name)}</h2>` : ''}${singleTableHtml(data, team.id)}</section>`).join('')}</div>`;
+  }
+
+  function historyHtml(data, teamFilter) {
+    const rows = (data.seasonPositions || []).filter((row) => teamFilter === 'All' || row.team === teamFilter);
+    if (!rows.length) return '<div class="cricket-empty"><h3>Past positions unavailable</h3><p>Historical finishes will appear where Play-Cricket has published league tables.</p></div>';
+    return `<div class="history-grid">${rows.map((row) => `<article class="history-card"><span>${esc(row.season)}</span><strong>${esc(row.position)}${/1$/.test(row.position) && !/11$/.test(row.position) ? 'st' : /2$/.test(row.position) && !/12$/.test(row.position) ? 'nd' : /3$/.test(row.position) && !/13$/.test(row.position) ? 'rd' : 'th'}</strong><div>${esc(row.team)}</div><p>${esc(row.division)}</p></article>`).join('')}</div>`;
   }
 
   function statsHtml(data, teamNameValue) {
@@ -99,20 +127,23 @@
     const content = document.querySelector('[data-cricket-content]');
     if (!hub || !content) return;
     const buttons = [...hub.querySelectorAll('[data-team]')];
-    let selected = localStorage.getItem('outwoods-cricket-team') || '1st XI';
-    if (!buttons.some((button) => button.dataset.team === selected)) selected = '1st XI';
+    let selected = localStorage.getItem('outwoods-cricket-team') || 'All';
+    if (!buttons.some((button) => button.dataset.team === selected)) selected = 'All';
 
     const draw = () => {
       buttons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.team === selected)));
-      const team = (data.teams || []).find((item) => item.name === selected) || { id: selected, name: selected };
-      const fixtures = (data.fixtures || []).filter((m) => m.team === selected);
-      const results = (data.results || []).filter((m) => m.team === selected);
-      content.innerHTML = `<div class="cricket-now">${fixtures[0] ? fixtureCard(fixtures[0], true) : nextEmpty(data.season)}${results[0] ? resultCard(results[0], data, true) : '<article class="match-card match-card-empty"><span class="match-eyebrow">Latest result</span><h3>No result available.</h3><p>Results will appear once published.</p></article>'}</div>
-        <div class="cricket-tabs" role="tablist" aria-label="Cricket information"><button role="tab" aria-selected="true" data-panel="fixtures">Fixtures</button><button role="tab" aria-selected="false" data-panel="results">Results</button><button role="tab" aria-selected="false" data-panel="table">Table</button><button role="tab" aria-selected="false" data-panel="stats">Stats</button></div>
+      const selectedTeams = selected === 'All' ? (data.teams || []) : (data.teams || []).filter((item) => item.name === selected);
+      const fixtures = (data.fixtures || []).filter((m) => selected === 'All' || m.team === selected);
+      const results = (data.results || []).filter((m) => selected === 'All' || m.team === selected);
+      const nextRound = fixtureRound(data.fixtures || []);
+      const latestRound = fixtureRound(data.results || [], true);
+      content.innerHTML = `<div class="round-summary"><section><h2>Next fixtures</h2><div class="round-card-grid">${nextRound.length ? nextRound.map((match) => fixtureCard(match, true)).join('') : nextEmpty(data.season)}</div></section><section><h2>Latest results</h2><div class="round-card-grid">${latestRound.length ? latestRound.map((match) => resultCard(match, data, true)).join('') : '<article class="match-card match-card-empty"><h3>No results available.</h3></article>'}</div></section></div>
+        <div class="cricket-tabs" role="tablist" aria-label="Fixtures and results"><button role="tab" aria-selected="true" data-panel="fixtures">Fixtures</button><button role="tab" aria-selected="false" data-panel="results">Results</button><button role="tab" aria-selected="false" data-panel="table">Table</button><button role="tab" aria-selected="false" data-panel="history">Past seasons</button><button role="tab" aria-selected="false" data-panel="stats">Stats</button></div>
         <div class="cricket-panel" data-panel-content>
           <div data-view="fixtures">${fixtures.length ? `<div class="match-list">${fixtures.map((m) => fixtureCard(m)).join('')}</div>` : nextEmpty(data.season)}</div>
           <div data-view="results" hidden>${results.length ? `<div class="match-list">${results.map((m) => resultCard(m, data)).join('')}</div>` : '<div class="cricket-empty"><h3>No results available</h3><p>Published results will appear here automatically.</p></div>'}</div>
-          <div data-view="table" hidden>${tableHtml(data, team.id)}</div>
+          <div data-view="table" hidden>${tableHtml(data, selectedTeams)}</div>
+          <div data-view="history" hidden>${historyHtml(data, selected)}</div>
           <div data-view="stats" hidden>${statsHtml(data, selected)}</div>
         </div>`;
       const tabs = [...content.querySelectorAll('[role="tab"]')];

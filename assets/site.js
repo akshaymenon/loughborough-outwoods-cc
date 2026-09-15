@@ -26,7 +26,7 @@ const mainNav = document.querySelector('.nav-links');
 if (mainNav && !mainNav.querySelector('a[href*="/cricket/"]')) {
   const cricketLink = document.createElement('a');
   cricketLink.href = '/cricket/';
-  cricketLink.textContent = 'Cricket';
+  cricketLink.textContent = 'Fixtures & Results';
   const juniorsLink = Array.from(mainNav.querySelectorAll('a')).find((link) => link.textContent.trim() === 'Juniors');
   if (juniorsLink) mainNav.insertBefore(cricketLink, juniorsLink);
   else mainNav.insertBefore(cricketLink, mainNav.firstChild);
@@ -44,7 +44,7 @@ const clubFooterLinks = document.querySelector('footer .footer-grid > div:nth-ch
 if (clubFooterLinks && !clubFooterLinks.querySelector('a[href*="/cricket/"]')) {
   const cricketFooterLink = document.createElement('a');
   cricketFooterLink.href = '/cricket/';
-  cricketFooterLink.textContent = 'Cricket';
+  cricketFooterLink.textContent = 'Fixtures & results';
   const juniorsFooterLink = Array.from(clubFooterLinks.querySelectorAll('a')).find((link) => link.textContent.trim() === 'Juniors');
   if (juniorsFooterLink) clubFooterLinks.insertBefore(cricketFooterLink, juniorsFooterLink);
   else clubFooterLinks.appendChild(cricketFooterLink);

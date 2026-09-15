@@ -32,10 +32,19 @@ def parse_date(value: str) -> date:
     return datetime.strptime(value, "%d/%m/%Y").date()
 
 
+def canonical_team_name(value: str) -> str:
+    lowered = (value or "").lower()
+    if "1st xi" in lowered:
+        return "1st XI"
+    if "2nd xi" in lowered:
+        return "2nd XI"
+    return value or "Outwoods"
+
+
 def team_label(match: dict, club_id: str) -> str:
     if str(match.get("home_club_id")) == club_id:
-        return match.get("home_team_name") or "Outwoods"
-    return match.get("away_team_name") or "Outwoods"
+        return canonical_team_name(match.get("home_team_name", ""))
+    return canonical_team_name(match.get("away_team_name", ""))
 
 
 def normalise_match(match: dict, club_id: str, result: bool = False) -> dict:
@@ -196,7 +205,9 @@ def main():
         return 0
 
     today = date.today()
-    seasons = sorted({today.year - 1, today.year, today.year + 1})
+    # Keep the public archive useful without asking Play-Cricket for every season
+    # in the club's history. 2020 is the earliest season shown in the website UI.
+    seasons = list(range(2020, today.year + 2))
     teams_raw = fetch(f"sites/{site_id}/teams.json", api_token=token)
     senior_teams = [t for t in teams_raw.get("teams", []) if any(label in (t.get("team_name") or "").strip().lower() for label in ("1st xi", "2nd xi"))]
     team_ids = {str(t["id"]) for t in senior_teams}
@@ -225,29 +236,47 @@ def main():
             print(f"Could not fetch match {result['id']}: {error}", file=sys.stderr)
 
     tables = []
-    division_ids = []
+    division_seasons = {}
     for match in all_matches + all_results:
         if senior(match) and match.get("competition_type") == "League" and match.get("competition_id"):
-            division_ids.append(str(match["competition_id"]))
-    for division_id in dict.fromkeys(reversed(division_ids)):
+            division_seasons[str(match["competition_id"])] = int(match.get("season") or parse_date(match["match_date"]).year)
+    for division_id, season in sorted(division_seasons.items(), key=lambda item: item[1], reverse=True):
         try:
             table = (fetch("league_table.json", division_id=division_id, api_token=token).get("league_table") or [None])[0]
             if table:
+                table["season"] = season
+                table["competitionId"] = division_id
                 tables.append(table)
         except Exception as error:
             print(f"Could not fetch table {division_id}: {error}", file=sys.stderr)
+
+    season_positions = []
+    for table in tables:
+        for row in table.get("values", []):
+            row_team_id = str(row.get("team_id", ""))
+            if row_team_id not in team_ids:
+                continue
+            team = next((t for t in senior_teams if str(t["id"]) == row_team_id), None)
+            season_positions.append({
+                "season": table["season"],
+                "team": canonical_team_name(team.get("team_name", "Outwoods")) if team else "Outwoods",
+                "teamId": row_team_id,
+                "position": str(row.get("position", "")),
+                "division": table.get("name", ""),
+            })
 
     payload = {
         "generatedAt": datetime.utcnow().replace(microsecond=0).isoformat() + "Z",
         "siteId": site_id,
         "season": latest_season,
-        "teams": [{"id": str(t["id"]), "name": t.get("team_name", "")} for t in senior_teams],
+        "teams": [{"id": str(t["id"]), "name": canonical_team_name(t.get("team_name", ""))} for t in senior_teams],
         "fixtures": fixtures,
         "results": results[:30],
         "tables": tables,
+        "seasonPositions": sorted(season_positions, key=lambda row: (-row["season"], row["team"])),
         "stats": build_stats(details, team_ids),
         "statsByTeam": {
-            team["team_name"]: build_stats([m for m in details if m["team"] == team["team_name"]], {str(team["id"])})
+            canonical_team_name(team["team_name"]): build_stats([m for m in details if m["team"] == canonical_team_name(team["team_name"])], {str(team["id"])})
             for team in senior_teams
         },
         "matches": {m["id"]: m for m in details},
