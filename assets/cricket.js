@@ -42,7 +42,7 @@
   };
   const outcome = (match) => {
     const won = match.resultAppliedTo && match.resultAppliedTo === match.teamId;
-    if (match.result === 'W') return won ? 'W' : 'L';
+    if (match.result === 'W' || match.result === 'CON') return won ? 'W' : 'L';
     if (/tie/i.test(match.resultDescription)) return 'T';
     return 'D';
   };
@@ -127,10 +127,15 @@
     }
     const teamStats = data.statsByTeam?.[teamNameValue] || data.stats || {};
     const filterPlayer = (row) => row.name;
-    const batting = (teamStats.batting || []).filter(filterPlayer).slice(0, 5);
-    const bowling = (teamStats.bowling || []).filter(filterPlayer).slice(0, 5);
-    if (!batting.length && !bowling.length) return '<div class="cricket-empty"><h3>Season statistics unavailable</h3><p>Batting and bowling leaders will appear once scorecards are available.</p></div>';
-    return `<div class="stats-grid"><div><span class="match-eyebrow">Batting leaders</span>${batting.map((p, i) => `<div class="stat-row"><span><b>${i + 1}</b>${esc(p.name)}</span><strong>${esc(p.runs)} runs</strong></div>`).join('')}</div><div><span class="match-eyebrow">Bowling leaders</span>${bowling.map((p, i) => `<div class="stat-row"><span><b>${i + 1}</b>${esc(p.name)}</span><strong>${esc(p.wickets)} wickets</strong></div>`).join('')}</div></div><p class="data-note">Club figures calculated from published ${esc(teamNameValue)} scorecards.</p>`;
+    const batting = (teamStats.batting || []).filter(filterPlayer);
+    const bowling = (teamStats.bowling || []).filter(filterPlayer);
+    const fielding = (teamStats.fielding || []).filter(filterPlayer);
+    if (!batting.length && !bowling.length) return '<div class="cricket-empty"><h3>Season statistics unavailable</h3><p>Player figures will appear once scorecards are available.</p></div>';
+    const cell = (value) => esc(value ?? '—');
+    const battingTable = `<section class="stats-section"><div class="stats-heading"><span class="match-eyebrow">Batting</span><h3>Season batting</h3></div><div class="stats-table-wrap"><table class="stats-table"><thead><tr><th>Player</th><th>Inn</th><th>Runs</th><th>HS</th><th>Avg</th><th>SR</th><th>50</th><th>100</th></tr></thead><tbody>${batting.map((p) => `<tr><td>${esc(p.name)}</td><td>${cell(p.innings)}</td><td><b>${cell(p.runs)}</b></td><td>${cell(p.highScoreDisplay ?? p.highScore)}</td><td>${cell(p.average)}</td><td>${cell(p.strikeRate)}</td><td>${cell(p.fifties)}</td><td>${cell(p.hundreds)}</td></tr>`).join('')}</tbody></table></div></section>`;
+    const bowlingTable = `<section class="stats-section"><div class="stats-heading"><span class="match-eyebrow">Bowling</span><h3>Season bowling</h3></div><div class="stats-table-wrap"><table class="stats-table"><thead><tr><th>Player</th><th>Inn</th><th>Overs</th><th>Wkts</th><th>BBI</th><th>Avg</th><th>Econ</th><th>SR</th></tr></thead><tbody>${bowling.map((p) => `<tr><td>${esc(p.name)}</td><td>${cell(p.innings)}</td><td>${cell(p.overs)}</td><td><b>${cell(p.wickets)}</b></td><td>${cell(p.best)}</td><td>${cell(p.average)}</td><td>${cell(p.economy)}</td><td>${cell(p.strikeRate)}</td></tr>`).join('')}</tbody></table></div></section>`;
+    const fieldingTable = fielding.length ? `<section class="stats-section"><div class="stats-heading"><span class="match-eyebrow">Fielding</span><h3>Season fielding</h3></div><div class="stats-table-wrap"><table class="stats-table stats-table-fielding"><thead><tr><th>Player</th><th>Catches</th><th>Stumpings</th><th>Run-outs</th></tr></thead><tbody>${fielding.map((p) => `<tr><td>${esc(p.name)}</td><td><b>${cell(p.catches)}</b></td><td>${cell(p.stumpings)}</td><td>${cell(p.runOuts)}</td></tr>`).join('')}</tbody></table></div></section>` : '';
+    return `<div class="season-stats">${battingTable}${bowlingTable}${fieldingTable}</div><p class="data-note">Calculated from published ${esc(teamNameValue)} scorecards. Averages use recorded dismissals.</p>`;
   }
 
   function renderHub(data) {
