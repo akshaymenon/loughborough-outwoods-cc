@@ -132,10 +132,54 @@
     const fielding = (teamStats.fielding || []).filter(filterPlayer);
     if (!batting.length && !bowling.length) return '<div class="cricket-empty"><h3>Season statistics unavailable</h3><p>Player figures will appear once scorecards are available.</p></div>';
     const cell = (value) => esc(value ?? '—');
-    const battingTable = `<section class="stats-section"><div class="stats-heading"><span class="match-eyebrow">Batting</span><h3>Season batting</h3></div><div class="stats-table-wrap"><table class="stats-table"><thead><tr><th>Player</th><th>Inn</th><th>Runs</th><th>HS</th><th>Avg</th><th>SR</th><th>50</th><th>100</th></tr></thead><tbody>${batting.map((p) => `<tr><td>${esc(p.name)}</td><td>${cell(p.innings)}</td><td><b>${cell(p.runs)}</b></td><td>${cell(p.highScoreDisplay ?? p.highScore)}</td><td>${cell(p.average)}</td><td>${cell(p.strikeRate)}</td><td>${cell(p.fifties)}</td><td>${cell(p.hundreds)}</td></tr>`).join('')}</tbody></table></div></section>`;
-    const bowlingTable = `<section class="stats-section"><div class="stats-heading"><span class="match-eyebrow">Bowling</span><h3>Season bowling</h3></div><div class="stats-table-wrap"><table class="stats-table"><thead><tr><th>Player</th><th>Inn</th><th>Overs</th><th>Wkts</th><th>BBI</th><th>Avg</th><th>Econ</th><th>SR</th></tr></thead><tbody>${bowling.map((p) => `<tr><td>${esc(p.name)}</td><td>${cell(p.innings)}</td><td>${cell(p.overs)}</td><td><b>${cell(p.wickets)}</b></td><td>${cell(p.best)}</td><td>${cell(p.average)}</td><td>${cell(p.economy)}</td><td>${cell(p.strikeRate)}</td></tr>`).join('')}</tbody></table></div></section>`;
-    const fieldingTable = fielding.length ? `<section class="stats-section"><div class="stats-heading"><span class="match-eyebrow">Fielding</span><h3>Season fielding</h3></div><div class="stats-table-wrap"><table class="stats-table stats-table-fielding"><thead><tr><th>Player</th><th>Catches</th><th>Stumpings</th><th>Run-outs</th></tr></thead><tbody>${fielding.map((p) => `<tr><td>${esc(p.name)}</td><td><b>${cell(p.catches)}</b></td><td>${cell(p.stumpings)}</td><td>${cell(p.runOuts)}</td></tr>`).join('')}</tbody></table></div></section>` : '';
+    const sortHead = (label, key) => `<th><button type="button" data-sort-key="${key}">${label}<span aria-hidden="true"></span></button></th>`;
+    const statCell = (label, key, value, display = value, strong = false) => `<td data-label="${label}" data-stat="${key}" data-value="${cell(value)}">${strong ? `<b>${cell(display)}</b>` : cell(display)}</td>`;
+    const sortSelect = (options, selected) => `<label class="stats-sort-control"><span>Sort by</span><select data-stats-sort>${options.map(([key, label]) => `<option value="${key}"${key === selected ? ' selected' : ''}>${label}</option>`).join('')}</select></label>`;
+    const battingOptions = [['runs', 'Runs'], ['average', 'Average'], ['strikeRate', 'Strike rate'], ['highScore', 'Highest score'], ['fifties', 'Fifties'], ['hundreds', 'Hundreds'], ['innings', 'Innings'], ['name', 'Player']];
+    const bowlingOptions = [['wickets', 'Wickets'], ['average', 'Average'], ['economy', 'Economy'], ['strikeRate', 'Strike rate'], ['bestValue', 'Best figures'], ['overs', 'Overs'], ['innings', 'Innings'], ['name', 'Player']];
+    const fieldingOptions = [['catches', 'Catches'], ['stumpings', 'Stumpings'], ['runOuts', 'Run-outs'], ['name', 'Player']];
+    const battingTable = `<section class="stats-section"><div class="stats-heading"><div><span class="match-eyebrow">Batting</span><h3>Season batting</h3></div>${sortSelect(battingOptions, 'runs')}</div><div class="stats-table-wrap"><table class="stats-table" data-default-sort="runs"><thead><tr>${sortHead('Player', 'name')}${sortHead('Inn', 'innings')}${sortHead('Runs', 'runs')}${sortHead('HS', 'highScore')}${sortHead('Avg', 'average')}${sortHead('SR', 'strikeRate')}${sortHead('50', 'fifties')}${sortHead('100', 'hundreds')}</tr></thead><tbody>${batting.map((p) => `<tr>${statCell('Player', 'name', p.name)}${statCell('Innings', 'innings', p.innings)}${statCell('Runs', 'runs', p.runs, p.runs, true)}${statCell('Highest score', 'highScore', p.highScore, p.highScoreDisplay ?? p.highScore)}${statCell('Average', 'average', p.average)}${statCell('Strike rate', 'strikeRate', p.strikeRate)}${statCell('50s', 'fifties', p.fifties)}${statCell('100s', 'hundreds', p.hundreds)}</tr>`).join('')}</tbody></table></div></section>`;
+    const bowlingTable = `<section class="stats-section"><div class="stats-heading"><div><span class="match-eyebrow">Bowling</span><h3>Season bowling</h3></div>${sortSelect(bowlingOptions, 'wickets')}</div><div class="stats-table-wrap"><table class="stats-table" data-default-sort="wickets"><thead><tr>${sortHead('Player', 'name')}${sortHead('Inn', 'innings')}${sortHead('Overs', 'overs')}${sortHead('Wkts', 'wickets')}${sortHead('BBI', 'bestValue')}${sortHead('Avg', 'average')}${sortHead('Econ', 'economy')}${sortHead('SR', 'strikeRate')}</tr></thead><tbody>${bowling.map((p) => { const parts = String(p.best || '0/9999').split('/').map(Number); const bestValue = (parts[0] || 0) * 10000 - (parts[1] || 9999); return `<tr>${statCell('Player', 'name', p.name)}${statCell('Innings', 'innings', p.innings)}${statCell('Overs', 'overs', p.overs)}${statCell('Wickets', 'wickets', p.wickets, p.wickets, true)}${statCell('Best figures', 'bestValue', bestValue, p.best)}${statCell('Average', 'average', p.average)}${statCell('Economy', 'economy', p.economy)}${statCell('Strike rate', 'strikeRate', p.strikeRate)}</tr>`; }).join('')}</tbody></table></div></section>`;
+    const fieldingTable = fielding.length ? `<section class="stats-section"><div class="stats-heading"><div><span class="match-eyebrow">Fielding</span><h3>Season fielding</h3></div>${sortSelect(fieldingOptions, 'catches')}</div><div class="stats-table-wrap"><table class="stats-table stats-table-fielding" data-default-sort="catches"><thead><tr>${sortHead('Player', 'name')}${sortHead('Catches', 'catches')}${sortHead('Stumpings', 'stumpings')}${sortHead('Run-outs', 'runOuts')}</tr></thead><tbody>${fielding.map((p) => `<tr>${statCell('Player', 'name', p.name)}${statCell('Catches', 'catches', p.catches, p.catches, true)}${statCell('Stumpings', 'stumpings', p.stumpings)}${statCell('Run-outs', 'runOuts', p.runOuts)}</tr>`).join('')}</tbody></table></div></section>` : '';
     return `<div class="season-stats">${battingTable}${bowlingTable}${fieldingTable}</div><p class="data-note">Calculated from published ${esc(teamNameValue)} scorecards. Averages use recorded dismissals.</p>`;
+  }
+
+  function setupStatsSorting(root) {
+    root.querySelectorAll('.stats-section').forEach((section) => {
+      const table = section.querySelector('.stats-table');
+      const body = table?.tBodies[0];
+      if (!table || !body) return;
+      let activeKey = table.dataset.defaultSort;
+      let direction = 'desc';
+      const sortRows = (key, nextDirection) => {
+        activeKey = key;
+        direction = nextDirection;
+        const rows = [...body.rows];
+        rows.sort((a, b) => {
+          const av = a.querySelector(`[data-stat="${key}"]`)?.dataset.value ?? '';
+          const bv = b.querySelector(`[data-stat="${key}"]`)?.dataset.value ?? '';
+          const an = Number(av); const bn = Number(bv);
+          const aMissing = av === '' || av === '—'; const bMissing = bv === '' || bv === '—';
+          if (aMissing !== bMissing) return aMissing ? 1 : -1;
+          const comparison = !Number.isNaN(an) && !Number.isNaN(bn) ? an - bn : av.localeCompare(bv);
+          return direction === 'asc' ? comparison : -comparison;
+        });
+        rows.forEach((row) => body.appendChild(row));
+        table.querySelectorAll('[data-sort-key]').forEach((button) => {
+          const current = button.dataset.sortKey === key;
+          button.closest('th').setAttribute('aria-sort', current ? (direction === 'asc' ? 'ascending' : 'descending') : 'none');
+          button.querySelector('span').textContent = current ? (direction === 'asc' ? ' ↑' : ' ↓') : '';
+        });
+        const select = section.querySelector('[data-stats-sort]');
+        if (select) select.value = key;
+      };
+      table.querySelectorAll('[data-sort-key]').forEach((button) => button.addEventListener('click', () => {
+        const key = button.dataset.sortKey;
+        sortRows(key, activeKey === key && direction === 'desc' ? 'asc' : 'desc');
+      }));
+      section.querySelector('[data-stats-sort]')?.addEventListener('change', (event) => sortRows(event.target.value, event.target.value === 'name' ? 'asc' : 'desc'));
+      sortRows(activeKey, direction);
+    });
   }
 
   function renderHub(data) {
@@ -176,6 +220,7 @@
         </div>`;
       const tableButton = content.querySelector('[data-open-table]');
       if (tableButton) tableButton.addEventListener('click', () => setPanel('table'));
+      setupStatsSorting(content);
       setPanel(activePanel);
     };
     buttons.forEach((button) => button.addEventListener('click', () => {
