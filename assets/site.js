@@ -19,65 +19,30 @@ if (menuButton && navLinks) {
   });
 }
 
-const year = document.querySelector('[data-year]');
-if (year) year.textContent = new Date().getFullYear();
+document.querySelectorAll('[data-year]').forEach((year) => {
+  year.textContent = new Date().getFullYear();
+});
 
-const normaliseLinkText = (value) => value.replace(/&/g, 'and').replace(/\s+/g, ' ').trim().toLowerCase();
-const navigationItems = [
-  ['About', '/about.html'],
-  ['Fixtures & results', '/fixtures-results/'],
-  ['Juniors', '/juniors/'],
-  ['Gallery', '/gallery.html'],
-  ['Sponsors', '/sponsors.html'],
-  ['Club shop', 'https://iconsports.co.uk/my-club-zone/my-club-zone-cricket/loughborough-outwoods-cc-teamwear'],
-  ['Join us', '/join.html']
-];
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-const setCurrentNavigation = (links) => {
-  const currentPath = window.location.pathname.replace(/index\.html$/, '').replace(/\/$/, '') || '/';
-  links.forEach((link) => {
-    const href = link.getAttribute('href') || '';
-    const linkPath = href.startsWith('/') ? href.replace(/\/$/, '') || '/' : '';
-    const isCurrent = linkPath && (currentPath === linkPath || currentPath.startsWith(`${linkPath}/`) || (linkPath === '/fixtures-results' && currentPath === '/cricket'));
-    if (isCurrent) link.setAttribute('aria-current', 'page');
-    else link.removeAttribute('aria-current');
-  });
+const getFocusableElements = (container) => Array.from(
+  container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')
+).filter((element) => !element.hidden && element.getAttribute('aria-hidden') !== 'true');
+
+const trapFocus = (event, container) => {
+  if (event.key !== 'Tab') return;
+  const focusable = getFocusableElements(container);
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
 };
-
-const mainNav = document.querySelector('.nav-links');
-if (mainNav) {
-  const existing = new Map(Array.from(mainNav.querySelectorAll('a')).map((link) => [normaliseLinkText(link.textContent), link]));
-  const links = navigationItems.map(([label, href]) => {
-    const link = existing.get(normaliseLinkText(label)) || document.createElement('a');
-    link.href = href;
-    link.textContent = label;
-    if (label === 'Club shop') {
-      link.target = '_blank';
-      link.rel = 'noreferrer';
-    } else {
-      link.removeAttribute('target');
-      link.removeAttribute('rel');
-    }
-    if (label === 'Join us') link.classList.add('btn');
-    return link;
-  });
-  mainNav.replaceChildren(...links);
-  setCurrentNavigation(links);
-}
-
-const clubFooterLinks = document.querySelector('footer .footer-grid > div:nth-child(2) .footer-links');
-if (clubFooterLinks) {
-  const existing = new Map(Array.from(clubFooterLinks.querySelectorAll('a')).map((link) => [normaliseLinkText(link.textContent), link]));
-  const footerItems = navigationItems.slice(0, 5).concat([['Cricket in Loughborough', '/cricket-club-loughborough/']]);
-  const links = footerItems.map(([label, href]) => {
-    const link = existing.get(normaliseLinkText(label)) || document.createElement('a');
-    link.href = href;
-    link.textContent = label;
-    return link;
-  });
-  clubFooterLinks.replaceChildren(...links);
-}
-\nconst prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const instagramFeed = document.querySelector('[data-instagram-feed]');
 if (instagramFeed) {
@@ -121,7 +86,7 @@ if (instagramFeed) {
           const alt = post.altText || post.prunedCaption || 'Loughborough Outwoods Instagram post';
           const safeAlt = String(alt).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
           const href = post.permalink || 'https://www.instagram.com/lborooutwoodscc';
-          return `<a class="instagram-card" href="${href}" target="_blank" rel="noreferrer" aria-label="Open Instagram post"><img src="${imageUrl}" alt="${safeAlt}" loading="lazy" decoding="async"></a>`;
+          return `<a class="instagram-card" href="${href}" target="_blank" rel="noreferrer" aria-label="Open Instagram post: ${safeAlt}"><img src="${imageUrl}" alt="${safeAlt}" loading="lazy" decoding="async"></a>`;
         }).join('');
 
         requestAnimationFrame(updateInstagramArrows);
@@ -176,8 +141,48 @@ if (galleryItems.length && lightbox) {
   });
   document.addEventListener('keydown', (event) => {
     if (lightbox.hidden) return;
+    trapFocus(event, lightbox);
     if (event.key === 'Escape') closeLightbox();
     if (event.key === 'ArrowLeft') showImage(currentIndex - 1);
     if (event.key === 'ArrowRight') showImage(currentIndex + 1);
   });
+}
+
+const recruitmentPoster = document.querySelector('[data-recruitment-poster]');
+if (recruitmentPoster) {
+  const closeButton = recruitmentPoster.querySelector('[data-poster-close]');
+  const desktopPoster = window.matchMedia('(min-width: 901px)');
+  let previousFocus = null;
+
+  const openPoster = () => {
+    if (!desktopPoster.matches || !recruitmentPoster.hidden) return;
+    previousFocus = document.activeElement;
+    recruitmentPoster.hidden = false;
+    recruitmentPoster.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('poster-modal-open');
+    closeButton.focus();
+  };
+
+  const closePoster = () => {
+    if (recruitmentPoster.hidden) return;
+    recruitmentPoster.hidden = true;
+    recruitmentPoster.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('poster-modal-open');
+    if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+  };
+
+  closeButton.addEventListener('click', closePoster);
+  recruitmentPoster.addEventListener('click', (event) => {
+    if (event.target === recruitmentPoster) closePoster();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (recruitmentPoster.hidden) return;
+    trapFocus(event, recruitmentPoster);
+    if (event.key === 'Escape') closePoster();
+  });
+  desktopPoster.addEventListener('change', (event) => {
+    if (!event.matches) closePoster();
+  });
+
+  openPoster();
 }
