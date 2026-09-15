@@ -117,6 +117,10 @@ main .scorecard-missing h1{font-size:clamp(2.4rem,8vw,3.6rem)}
 .recruitment-poster-close:hover{background:var(--forest-deep)}
 .poster-modal-open{overflow:hidden}
 
+@media(min-width:901px){
+  .instagram-primary .instagram-btn{margin-top:43px}
+}
+
 @media(max-width:900px){
   .nav-links a[aria-current="page"]:not(.btn){border-left-color:var(--forest)}
   .recruitment-poster-modal{display:none!important}
