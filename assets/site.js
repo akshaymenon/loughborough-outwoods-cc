@@ -22,7 +22,26 @@ if (menuButton && navLinks) {
 const year = document.querySelector('[data-year]');
 if (year) year.textContent = new Date().getFullYear();
 
+const mainNav = document.querySelector('.nav-links');
+if (mainNav && !mainNav.querySelector('a[href*="/juniors/"]')) {
+  const juniorsLink = document.createElement('a');
+  juniorsLink.href = '/juniors/';
+  juniorsLink.textContent = 'Juniors';
+  const galleryLink = Array.from(mainNav.querySelectorAll('a')).find((link) => link.textContent.trim() === 'Gallery');
+  if (galleryLink) mainNav.insertBefore(juniorsLink, galleryLink);
+  else mainNav.insertBefore(juniorsLink, mainNav.firstChild);
+}
+
 const clubFooterLinks = document.querySelector('footer .footer-grid > div:nth-child(2) .footer-links');
+if (clubFooterLinks && !clubFooterLinks.querySelector('a[href*="/juniors/"]')) {
+  const juniorsFooterLink = document.createElement('a');
+  juniorsFooterLink.href = '/juniors/';
+  juniorsFooterLink.textContent = 'Juniors';
+  const galleryFooterLink = Array.from(clubFooterLinks.querySelectorAll('a')).find((link) => link.textContent.trim() === 'Gallery');
+  if (galleryFooterLink) clubFooterLinks.insertBefore(juniorsFooterLink, galleryFooterLink);
+  else clubFooterLinks.appendChild(juniorsFooterLink);
+}
+
 if (clubFooterLinks && !clubFooterLinks.querySelector('a[href*="cricket-club-loughborough"]')) {
   const loughboroughCricketLink = document.createElement('a');
   loughboroughCricketLink.href = '/cricket-club-loughborough/';
