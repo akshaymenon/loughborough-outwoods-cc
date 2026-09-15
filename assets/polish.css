@@ -1,7 +1,7 @@
 /* Final site polish: active navigation, accessibility, responsive rhythm and 404 */
 .nav-links a[aria-current="page"]{color:var(--forest);font-weight:700}
 .nav-links>a[aria-current="page"]:not(.btn)::after{right:0;height:2px}
-.nav-links .btn[aria-current="page"]{background:var(--forest-deep);border-color:var(--forest-deep)}
+.nav-links .btn[aria-current="page"]{background:var(--forest-deep);border-color:var(--forest-deep);color:#fff}
 
 .skip-link{position:fixed;left:14px;top:14px;z-index:2000;padding:10px 14px;background:var(--forest-deep);color:#fff;text-decoration:none;transform:translateY(-180%);transition:transform .18s ease}
 .skip-link:focus{transform:translateY(0)}
