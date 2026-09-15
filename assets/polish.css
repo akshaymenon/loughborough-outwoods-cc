@@ -82,6 +82,8 @@
 .kicker{color:var(--brass-text);font-size:.78rem}
 .sponsor-info-section .kicker{color:var(--brass-text)}
 .error-code,.match-card .match-eyebrow,.current-status .status-kicker,.history-card>span,.stat-row span b,.status-fixtures a strong,.match-sides span{color:var(--brass-text)}
+.cricket-hero .kicker{color:#d2bc8b}
+.result-mark.result-d,.result-mark.result-t,.btn.brass{color:var(--forest-deep)}
 
 :focus-visible{outline-color:var(--forest)}
 .home-hero :focus-visible,.dark-section :focus-visible,.cricket-hero :focus-visible,footer :focus-visible,.lightbox :focus-visible,.recruitment-poster-modal :focus-visible{outline-color:var(--ivory)}
