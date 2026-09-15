@@ -32,16 +32,22 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Check Python syntax
+        run: python -m py_compile .github/scripts/*.py
       - name: Prepare sponsor logos
         run: |
           python -m pip install --disable-pip-version-check pillow
           python .github/scripts/clean_sponsor_logos.py
+      - name: Keep pre-refresh cricket archive
+        run: cp data/cricket/site.json /tmp/site-before.json
       - name: Sync Play-Cricket
         continue-on-error: true
         env:
           PLAY_CRICKET_API_TOKEN: ${{ secrets.PLAY_CRICKET_API_TOKEN }}
           PLAY_CRICKET_SITE_ID: ${{ vars.PLAY_CRICKET_SITE_ID || '7239' }}
         run: python .github/scripts/sync_play_cricket.py
+      - name: Preserve historical cricket seasons
+        run: python .github/scripts/preserve_cricket_history.py /tmp/site-before.json data/cricket/site.json
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload site
