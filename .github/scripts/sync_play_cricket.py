@@ -144,6 +144,9 @@ def normalise_detail(raw: dict, club_id: str) -> dict:
             batters.append({
                 "id": str(batter.get("batsman_id", "")),
                 "name": batter.get("batsman_name", ""),
+                "howOut": batter.get("how_out", ""),
+                "fielderId": str(batter.get("fielder_id", "")),
+                "fielderName": batter.get("fielder_name", ""),
                 "dismissal": dismissal.strip(),
                 "runs": batter.get("runs", ""),
                 "balls": batter.get("balls", ""),
@@ -181,40 +184,87 @@ def normalise_detail(raw: dict, club_id: str) -> dict:
 
 
 def build_stats(details: list[dict], team_ids: set[str]) -> dict:
-    batting = defaultdict(lambda: {"name": "", "runs": 0, "innings": 0, "highScore": 0})
-    bowling = defaultdict(lambda: {"name": "", "wickets": 0, "runs": 0, "overs": 0.0, "best": [0, 9999]})
+    batting = defaultdict(lambda: {"name": "", "runs": 0, "innings": 0, "outs": 0, "balls": 0, "highScore": 0, "highNotOut": False, "fifties": 0, "hundreds": 0})
+    bowling = defaultdict(lambda: {"name": "", "innings": 0, "wickets": 0, "runs": 0, "balls": 0, "best": [0, 9999]})
+    fielding = defaultdict(lambda: {"name": "", "catches": 0, "stumpings": 0, "runOuts": 0})
+
+    def number(value):
+        try:
+            return int(value or 0)
+        except (TypeError, ValueError):
+            return 0
+
+    def balls_from_overs(value):
+        whole, _, part = str(value or "0").partition(".")
+        return number(whole) * 6 + number(part[:1])
+
     for match in details:
         for inn in match.get("innings", []):
             if inn["teamId"] in team_ids:
                 for row in inn["batters"]:
                     if not row["id"]:
                         continue
+                    how_out = (row.get("howOut") or row.get("dismissal") or "").strip().lower()
+                    if how_out.startswith("did not bat"):
+                        continue
                     player = batting[row["id"]]
                     player["name"] = row["name"]
-                    runs = int(row["runs"] or 0)
+                    runs = number(row["runs"])
+                    balls = number(row["balls"])
+                    not_out = not how_out or how_out.startswith(("not out", "retired"))
                     player["runs"] += runs
+                    player["balls"] += balls
                     player["innings"] += 1
-                    player["highScore"] = max(player["highScore"], runs)
+                    if not not_out:
+                        player["outs"] += 1
+                    if runs > player["highScore"] or (runs == player["highScore"] and not_out):
+                        player["highScore"] = runs
+                        player["highNotOut"] = not_out
+                    if runs >= 100:
+                        player["hundreds"] += 1
+                    elif runs >= 50:
+                        player["fifties"] += 1
             else:
                 for row in inn["bowlers"]:
                     if not row["id"]:
                         continue
                     player = bowling[row["id"]]
                     player["name"] = row["name"]
-                    wickets, runs = int(row["wickets"] or 0), int(row["runs"] or 0)
+                    wickets, runs = number(row["wickets"]), number(row["runs"])
+                    player["innings"] += 1
                     player["wickets"] += wickets
                     player["runs"] += runs
-                    try:
-                        player["overs"] += float(row["overs"] or 0)
-                    except ValueError:
-                        pass
+                    player["balls"] += balls_from_overs(row["overs"])
                     if wickets > player["best"][0] or (wickets == player["best"][0] and runs < player["best"][1]):
                         player["best"] = [wickets, runs]
+                for row in inn["batters"]:
+                    fielder_id = row.get("fielderId", "")
+                    fielder_name = row.get("fielderName", "")
+                    if not fielder_id or not fielder_name:
+                        continue
+                    how_out = (row.get("howOut") or row.get("dismissal") or "").strip().lower()
+                    player = fielding[fielder_id]
+                    player["name"] = fielder_name
+                    if how_out.startswith("ct"):
+                        player["catches"] += 1
+                    elif how_out.startswith("st"):
+                        player["stumpings"] += 1
+                    elif how_out.startswith("run out"):
+                        player["runOuts"] += 1
     batting_rows = sorted(batting.values(), key=lambda p: (-p["runs"], p["name"]))
     bowling_rows = sorted(bowling.values(), key=lambda p: (-p["wickets"], p["runs"], p["name"]))
+    fielding_rows = sorted(fielding.values(), key=lambda p: (-(p["catches"] + p["stumpings"] + p["runOuts"]), p["name"]))
+    for row in batting_rows:
+        row["highScoreDisplay"] = f"{row['highScore']}{'*' if row.pop('highNotOut') else ''}"
+        row["average"] = f"{row['runs'] / row['outs']:.2f}" if row["outs"] else "—"
+        row["strikeRate"] = f"{row['runs'] * 100 / row['balls']:.2f}" if row["balls"] else "—"
     for row in bowling_rows:
         row["best"] = f"{row['best'][0]}/{row['best'][1]}" if row["best"][1] != 9999 else "—"
-    return {"batting": batting_rows, "bowling": bowling_rows}
+        row["overs"] = f"{row['balls'] // 6}.{row['balls'] % 6}"
+        row["average"] = f"{row['runs'] / row['wickets']:.2f}" if row["wickets"] else "—"
+        row["economy"] = f"{row['runs'] * 6 / row['balls']:.2f}" if row["balls"] else "—"
+        row["strikeRate"] = f"{row['balls'] / row['wickets']:.2f}" if row["wickets"] else "—"
+    return {"batting": batting_rows, "bowling": bowling_rows, "fielding": fielding_rows}
 
 
 def write_json(path: Path, value):
