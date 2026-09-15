@@ -23,6 +23,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Check JavaScript syntax
+        run: |
+          for file in assets/*.js; do
+            node --check "$file"
+          done
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
