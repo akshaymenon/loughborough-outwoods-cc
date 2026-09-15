@@ -1,3 +1,4 @@
+.cricket-source-link{display:flex;justify-content:flex-end;padding:9px 0 13px}.cricket-source-link a{color:#dbe2dd;font-size:.74rem;font-weight:700;letter-spacing:.06em;text-decoration:none;text-transform:uppercase}.cricket-source-link a:hover{color:#fff}.cricket-source-link span{color:var(--brass);font-size:1rem}
 .home-cricket{background:var(--forest);color:#fff;padding:72px 0 78px}
 .home-cricket .kicker{color:#d2bc8b}.home-cricket h2{color:#fff}.home-cricket .text-link{color:#fff}
 .home-rounds,.round-summary{display:grid;grid-template-columns:1fr 1fr;gap:34px}
