@@ -12,7 +12,7 @@ from collections import defaultdict
 from datetime import date, datetime
 from pathlib import Path
 
-API_ROOT = "https://www.play-cricket.com/api/v2"
+API_ROOT = "https://play-cricket.com/api/v2"
 OUT = Path(__file__).resolve().parents[2] / "data" / "cricket"
 CLUB_NAME = "Loughborough Outwoods"
 PLAY_CRICKET_ROOT = "https://loughboroughoutwoods.play-cricket.com"
