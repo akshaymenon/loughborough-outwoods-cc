@@ -81,14 +81,14 @@
 /* Join page */
 .join-simple{max-width:1100px;margin:auto}
 .join-primary-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:stretch}
-.join-primary-card{background:var(--sage-light);border-top:2px solid var(--forest);padding:34px 36px;min-height:100%;display:flex;flex-direction:column}
+.join-primary-card{background:var(--sage-light);border-top:2px solid var(--forest);padding:34px 36px;min-height:100%;display:flex;flex-direction:column;justify-content:flex-start}
 .join-primary-card .kicker{margin-bottom:18px}
 .join-primary-card h2{font-family:'Cormorant Garamond',Georgia,serif;color:var(--forest);font-size:clamp(2.7rem,4.5vw,4.4rem);line-height:.95;margin:0 0 14px;font-weight:600}
 .join-primary-card p{margin:0;color:#596159;max-width:520px}
 .whatsapp-panel{margin-top:26px;display:grid;grid-template-columns:210px 1fr;gap:28px;align-items:center}
 .whatsapp-panel img{width:210px;height:210px;object-fit:contain;background:#fff;padding:10px;display:block;border:1px solid var(--rule)}
 .whatsapp-btn{background:#1f7a4d;border-color:#1f7a4d}.whatsapp-btn:hover{background:#17613d}
-.instagram-primary{justify-content:center}.instagram-primary .instagram-btn{margin-top:28px;align-self:flex-start}
+.instagram-primary{justify-content:flex-start}.instagram-primary .instagram-btn{margin-top:28px;align-self:flex-start}
 .join-secondary{margin-top:58px;padding-top:32px;border-top:1px solid var(--rule)}
 .join-secondary>.kicker{text-align:center;margin-bottom:22px}
 .join-secondary-list{max-width:900px;margin:0 auto;display:grid;grid-template-columns:1.2fr 1fr 1fr;border-top:1px solid var(--rule)}
