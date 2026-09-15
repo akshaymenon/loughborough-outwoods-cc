@@ -38,7 +38,7 @@ const setCurrentNavigation = (links) => {
   links.forEach((link) => {
     const href = link.getAttribute('href') || '';
     const linkPath = href.startsWith('/') ? href.replace(/\/$/, '') || '/' : '';
-    const isCurrent = linkPath && (currentPath === linkPath || (linkPath === '/fixtures-results' && currentPath === '/cricket'));
+    const isCurrent = linkPath && (currentPath === linkPath || currentPath.startsWith(`${linkPath}/`) || (linkPath === '/fixtures-results' && currentPath === '/cricket'));
     if (isCurrent) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   });
