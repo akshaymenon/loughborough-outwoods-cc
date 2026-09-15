@@ -22,52 +22,62 @@ if (menuButton && navLinks) {
 const year = document.querySelector('[data-year]');
 if (year) year.textContent = new Date().getFullYear();
 
+const normaliseLinkText = (value) => value.replace(/&/g, 'and').replace(/\s+/g, ' ').trim().toLowerCase();
+const navigationItems = [
+  ['About', '/about.html'],
+  ['Fixtures & results', '/fixtures-results/'],
+  ['Juniors', '/juniors/'],
+  ['Gallery', '/gallery.html'],
+  ['Sponsors', '/sponsors.html'],
+  ['Club shop', 'https://iconsports.co.uk/my-club-zone/my-club-zone-cricket/loughborough-outwoods-cc-teamwear'],
+  ['Join us', '/join.html']
+];
+
+const setCurrentNavigation = (links) => {
+  const currentPath = window.location.pathname.replace(/index\.html$/, '').replace(/\/$/, '') || '/';
+  links.forEach((link) => {
+    const href = link.getAttribute('href') || '';
+    const linkPath = href.startsWith('/') ? href.replace(/\/$/, '') || '/' : '';
+    const isCurrent = linkPath && (currentPath === linkPath || (linkPath === '/fixtures-results' && currentPath === '/cricket'));
+    if (isCurrent) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  });
+};
+
 const mainNav = document.querySelector('.nav-links');
-if (mainNav && !mainNav.querySelector('a[href*="/fixtures-results/"]')) {
-  const cricketLink = document.createElement('a');
-  cricketLink.href = '/fixtures-results/';
-  cricketLink.textContent = 'Fixtures & Results';
-  const juniorsLink = Array.from(mainNav.querySelectorAll('a')).find((link) => link.textContent.trim() === 'Juniors');
-  if (juniorsLink) mainNav.insertBefore(cricketLink, juniorsLink);
-  else mainNav.insertBefore(cricketLink, mainNav.firstChild);
-}
-if (mainNav && !mainNav.querySelector('a[href*="/juniors/"]')) {
-  const juniorsLink = document.createElement('a');
-  juniorsLink.href = '/juniors/';
-  juniorsLink.textContent = 'Juniors';
-  const galleryLink = Array.from(mainNav.querySelectorAll('a')).find((link) => link.textContent.trim() === 'Gallery');
-  if (galleryLink) mainNav.insertBefore(juniorsLink, galleryLink);
-  else mainNav.insertBefore(juniorsLink, mainNav.firstChild);
+if (mainNav) {
+  const existing = new Map(Array.from(mainNav.querySelectorAll('a')).map((link) => [normaliseLinkText(link.textContent), link]));
+  const links = navigationItems.map(([label, href]) => {
+    const link = existing.get(normaliseLinkText(label)) || document.createElement('a');
+    link.href = href;
+    link.textContent = label;
+    if (label === 'Club shop') {
+      link.target = '_blank';
+      link.rel = 'noreferrer';
+    } else {
+      link.removeAttribute('target');
+      link.removeAttribute('rel');
+    }
+    if (label === 'Join us') link.classList.add('btn');
+    return link;
+  });
+  mainNav.replaceChildren(...links);
+  setCurrentNavigation(links);
 }
 
 const clubFooterLinks = document.querySelector('footer .footer-grid > div:nth-child(2) .footer-links');
-if (clubFooterLinks && !clubFooterLinks.querySelector('a[href*="/fixtures-results/"]')) {
-  const cricketFooterLink = document.createElement('a');
-  cricketFooterLink.href = '/fixtures-results/';
-  cricketFooterLink.textContent = 'Fixtures & results';
-  const juniorsFooterLink = Array.from(clubFooterLinks.querySelectorAll('a')).find((link) => link.textContent.trim() === 'Juniors');
-  if (juniorsFooterLink) clubFooterLinks.insertBefore(cricketFooterLink, juniorsFooterLink);
-  else clubFooterLinks.appendChild(cricketFooterLink);
+if (clubFooterLinks) {
+  const existing = new Map(Array.from(clubFooterLinks.querySelectorAll('a')).map((link) => [normaliseLinkText(link.textContent), link]));
+  const footerItems = navigationItems.slice(0, 5).concat([['Cricket in Loughborough', '/cricket-club-loughborough/']]);
+  const links = footerItems.map(([label, href]) => {
+    const link = existing.get(normaliseLinkText(label)) || document.createElement('a');
+    link.href = href;
+    link.textContent = label;
+    return link;
+  });
+  clubFooterLinks.replaceChildren(...links);
 }
-if (clubFooterLinks && !clubFooterLinks.querySelector('a[href*="/juniors/"]')) {
-  const juniorsFooterLink = document.createElement('a');
-  juniorsFooterLink.href = '/juniors/';
-  juniorsFooterLink.textContent = 'Juniors';
-  const galleryFooterLink = Array.from(clubFooterLinks.querySelectorAll('a')).find((link) => link.textContent.trim() === 'Gallery');
-  if (galleryFooterLink) clubFooterLinks.insertBefore(juniorsFooterLink, galleryFooterLink);
-  else clubFooterLinks.appendChild(juniorsFooterLink);
-}
-
-if (clubFooterLinks && !clubFooterLinks.querySelector('a[href*="cricket-club-loughborough"]')) {
-  const loughboroughCricketLink = document.createElement('a');
-  loughboroughCricketLink.href = '/cricket-club-loughborough/';
-  loughboroughCricketLink.textContent = 'Cricket in Loughborough';
-  const clubShopLink = Array.from(clubFooterLinks.querySelectorAll('a')).find((link) => link.textContent.trim() === 'Club shop');
-  if (clubShopLink) clubFooterLinks.insertBefore(loughboroughCricketLink, clubShopLink);
-  else clubFooterLinks.appendChild(loughboroughCricketLink);
-}
-
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+\nconst prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const instagramFeed = document.querySelector('[data-instagram-feed]');
 if (instagramFeed) {
