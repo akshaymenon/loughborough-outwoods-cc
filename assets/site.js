@@ -22,6 +22,16 @@ if (menuButton && navLinks) {
 const year = document.querySelector('[data-year]');
 if (year) year.textContent = new Date().getFullYear();
 
+const clubFooterLinks = document.querySelector('footer .footer-grid > div:nth-child(2) .footer-links');
+if (clubFooterLinks && !clubFooterLinks.querySelector('a[href*="cricket-club-loughborough"]')) {
+  const loughboroughCricketLink = document.createElement('a');
+  loughboroughCricketLink.href = '/cricket-club-loughborough/';
+  loughboroughCricketLink.textContent = 'Cricket in Loughborough';
+  const clubShopLink = Array.from(clubFooterLinks.querySelectorAll('a')).find((link) => link.textContent.trim() === 'Club shop');
+  if (clubShopLink) clubFooterLinks.insertBefore(loughboroughCricketLink, clubShopLink);
+  else clubFooterLinks.appendChild(loughboroughCricketLink);
+}
+
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const instagramFeed = document.querySelector('[data-instagram-feed]');
