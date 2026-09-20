@@ -120,8 +120,8 @@ section{padding:84px 0}
 
 .cta-band{background:var(--sage);border:0}
 .cta-inner{display:grid;grid-template-columns:1fr auto;align-items:center;gap:50px}
-.cta-inner h2{font-family:'Cormorant Garamond',Georgia,serif;color:var(--forest);font-size:clamp(3rem,5vw,5rem);line-height:.9;margin:0;font-weight:600}
-.cta-inner p{max-width:450px;margin:0 0 16px}
+.cta-inner h2{font-family:'Cormorant Garamond',Georgia,serif;color:var(--forest);font-size:clamp(3rem,5vw,5rem);line-height:.9;margin:0 0 14px;font-weight:600}
+.cta-inner p{max-width:450px;margin:0}
 
 .gallery-page-section{padding-top:64px}
 .gallery-thumbs{columns:3;column-gap:18px}
