@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-16T09:58:29Z",
+  "generatedAt": "2026-09-23T10:01:06Z",
   "siteId": "7239",
   "season": 2026,
   "teams": [
@@ -1452,8 +1452,8 @@
           "column_8": "0",
           "column_9": "51",
           "column_10": "76",
-          "column_11": "13",
-          "column_12": "197"
+          "column_11": "21",
+          "column_12": "189"
         },
         {
           "position": "12",
@@ -1468,8 +1468,8 @@
           "column_8": "0",
           "column_9": "42",
           "column_10": "84",
-          "column_11": "15",
-          "column_12": "169"
+          "column_11": "18",
+          "column_12": "166"
         }
       ],
       "key": "p - Played,&nbsp;w - Won (25),&nbsp;l - Lost (0),&nbsp;t - Tied (15),&nbsp;aban - Abandoned,&nbsp;wcn - Opposition Conceded (25),&nbsp;lcn - Team Conceded (-15),&nbsp;BatP - Batting Bonus Points,&nbsp;BowlP - Bowling Bonus Points,&nbsp;Pen - Penalty Points,&nbsp;Pts - Points",
